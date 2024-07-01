@@ -2,37 +2,39 @@
 > 模板版本：v0.2.2
 
 <p align="center">
-  <h1 align="center"> <code>react-native-cardview</code> </h1>
+  <h1 align="center">react-native-spring-scrollview</code> </h1>
 </p>
 <p align="center">
-    <a href="https://github.com/Kishanjvaghela/react-native-cardview">
+    <a href="https://github.com/bolan9999/react-native-spring-scrollview/tree/master">
         <img src="https://img.shields.io/badge/platforms-android%20|%20ios%20|%20harmony%20-lightgrey.svg" alt="Supported platforms" />
     </a>
-    <a href="https://github.com/Kishanjvaghela/react-native-cardview">
+    <a href="https://github.com/bolan9999/react-native-spring-scrollview/blob/master/LICENSE>">
         <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
     </a>
 </p>
 
-> [!TIP] [Github 地址](https://github.com/react-native-oh-library/react-native-cardview)
+> [!TIP] [Github 地址](https://github.com/react-native-oh-library/react-native-spring-scrollview)
 
 ## 安装与使用
 
-请到三方库的 Releases 发布地址查看配套的版本信息：[@react-native-oh-tpl/react-native-cardview Releases](https://github.com/react-native-oh-library/react-native-cardview/releases)，并下载适用版本的 tgz 包。
+请到三方库的 Releases 发布地址查看配套的版本信息：[@react-native-oh-tpl/react-native-spring-scrollview Releases](https://github.com/react-native-oh-library/react-native-spring-scrollview/releases)，并下载适用版本的 tgz 包。
 
 进入到工程目录并输入以下命令：
 
 > [!TIP] # 处替换为 tgz 包的路径
 
+<!-- tabs:start -->
+
 #### **npm**
 
 ```bash
-npm install @react-native-oh-tpl/react-native-cardview@file:#
+npm install @react-native-oh-tpl/react-native-spring-scrollview@file:#
 ```
 
 #### **yarn**
 
 ```bash
-yarn add @react-native-oh-tpl/react-native-cardview@file:#
+yarn add @react-native-oh-tpl/react-native-spring-scrollview@file:#
 ```
 
 <!-- tabs:end -->
@@ -42,79 +44,64 @@ yarn add @react-native-oh-tpl/react-native-cardview@file:#
 > [!WARNING] 使用时 import 的库名不变。
 
 ```js
-import React, { Component } from 'react';
-import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
-import CardView from 'react-native-cardview';
+import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  Animated,
+  ScrollView,
+} from 'react-native';
+import {SpringScrollView} from 'react-native-spring-scrollview';
 
-export default class Example3 extends Component {
+const AnimatedSpringScrollView = Animated.createAnimatedComponent(SpringScrollView);
+export default class ScrollToAndOnScrollExample extends React.Component {
+  _contentCount = 20;
+  _scrollView;
+  _nativeOffset = {
+    y: new Animated.Value(0),
+  };
+
   render() {
+    const arr = [];
+    for (let i = 0; i < this._contentCount; ++i) arr.push(i);
     return (
-        <CardView
-          cardElevation={3}
-          cardMaxElevation={3}
-          cornerRadius={3}
-          style={{
-            height: 60,
-            justifyContent: 'center',
-            alignItems: 'center',
-            margin: 20,
-            backgroundColor: '#ffffff'
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'flex-end',
-              backgroundColor: 'red'
-            }}
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.scrollTo} onPress={this._scrollTo}>
+          <Text>Tap to ScrollTo y=200</Text>
+        </TouchableOpacity>
+        <SpringScrollView
+          style={styles.container}
+          ref={(ref) => (this._scrollView = ref)}
+          onTouchBegin={this._onTouchBegin}
+          onTouchFinish={this._onTouchEnd}
+          onMomentumScrollBegin={this.onMomentumScrollBegin}
+          onMomentumScrollEnd={this._onMomentumScrollEnd}
+          onNativeContentOffsetExtract={this._nativeOffset}
           >
-            <Text
-              style={{
-                color: '#000000',
-                fontSize: 12,
-                backgroundColor: 'pink',
-                textAlign: 'center'
-              }}
-            >
-              Helloo
+          {arr.map((i, index) => (
+            <Text key={index} style={styles.text}>
+              Scroll and Look up the console log to check if
+              'onScroll','onTouchBegin','onTouchEnd','onMomentumScrollBegin' and
+              'onMomentumScrollEnd' work well!
             </Text>
-          </View>
-        </CardView>
+          ))}
+          <Animated.View style={this._stickyHeaderStyle}>
+            <Text>Test `onNativeContentOffsetExtract`</Text>
+          </Animated.View>
+        </SpringScrollView>
+      </View>
     );
   }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  card: {
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    flex: 1,
-    margin: 10
-  },
-  text: {
-    textAlign: 'center',
-    margin: 10,
-    height: 75
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5
-  }
-});
-
 ```
 
 ## Link
 
-目前鸿蒙暂不支持 AutoLink，所以 Link 步骤需要手动配置。
+目前HarmonyOS暂不支持 AutoLink，所以 Link 步骤需要手动配置。
 
-首先需要使用 DevEco Studio 打开项目里的鸿蒙工程 `harmony`
+首先需要使用 DevEco Studio 打开项目里的HarmonyOS工程 `harmony`
 
 ### 在工程根目录的 `oh-package.json` 添加 overrides 字段
 
@@ -143,7 +130,8 @@ const styles = StyleSheet.create({
 ```json
 "dependencies": {
     "@rnoh/react-native-openharmony": "file:../react_native_openharmony",
-    "@react-native-oh-tpl/react-native-cardview": "file:../../node_modules/@react-native-oh-tpl/react-native-cardview/harmony/card_view.har"
+    "@react-native-oh-tpl/react-native-spring-scrollview": "file:../../node_modules/@react-native-oh-tpl/react-native-spring-scrollview/harmony/spring-scrollview.har",
+    "@react-native-oh-tpl/lottie-react-native": "file:../../node_modules/@react-native-oh-tpl/lottie-react-native/harmony/lottie.har"
   }
 ```
 
@@ -160,7 +148,7 @@ ohpm install
 
 > [!TIP] 如需使用直接链接源码，请参考[直接链接源码说明](/zh-cn/link-source-code.md)
 
-### 配置 CMakeLists 和引入 CardViewPackage
+### 配置 CMakeLists 和引入 SpringScrollViewPackge
 
 打开 `entry/src/main/cpp/CMakeLists.txt`，添加：
 
@@ -182,7 +170,8 @@ add_subdirectory("${RNOH_CPP_DIR}" ./rn)
 
 # RNOH_BEGIN: manual_package_linking_1
 add_subdirectory("../../../../sample_package/src/main/cpp" ./sample-package)
-+ add_subdirectory("${OH_MODULES}/@react-native-oh-tpl/react-native-cardview/src/main/cpp" ./card-view)
++ add_subdirectory("${OH_MODULES}/@react-native-oh-tpl/react-native-spring-scrollview/src/main/cpp" ./spring-scrollview)
++ add_subdirectory("${OH_MODULES}/@react-native-oh-tpl/lottie-react-native/src/main/cpp" ./lottie)
 # RNOH_END: manual_package_linking_1
 
 file(GLOB GENERATED_CPP_FILES "./generated/*.cpp")
@@ -196,7 +185,8 @@ target_link_libraries(rnoh_app PUBLIC rnoh)
 
 # RNOH_BEGIN: manual_package_linking_2
 target_link_libraries(rnoh_app PUBLIC rnoh_sample_package)
-+ target_link_libraries(rnoh_app PUBLIC rnoh_card_view)
++ target_link_libraries(rnoh_app PUBLIC rnoh_spring_scrollview)
++ target_link_libraries(rnoh_app PUBLIC rnoh_lottie)
 # RNOH_END: manual_package_linking_2
 ```
 
@@ -206,7 +196,8 @@ target_link_libraries(rnoh_app PUBLIC rnoh_sample_package)
 #include "RNOH/PackageProvider.h"
 #include "generated/RNOHGeneratedPackage.h"
 #include "SamplePackage.h"
-+ #include "CardViewPackage.h"
++ #include "SpringScrollViewPackage.h"
++ #include "LottieAnimationViewPackage.h"
 
 using namespace rnoh;
 
@@ -214,8 +205,63 @@ std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Cont
     return {
         std::make_shared<RNOHGeneratedPackage>(ctx),
         std::make_shared<SamplePackage>(ctx),
-+       std::make_shared<CardViewPackage>(ctx),
++       std::make_shared<SpringScrollViewPackage>(ctx),
++       std::make_shared<LottieAnimationViewPackage>(ctx),
     };
+}
+```
+
+### 在 ArkTs 侧引入 SpringScrollViewPackage
+
+打开 `entry/src/main/ets/RNPackagesFactory.ts`，添加：
+
+```diff
+...
++ import {SpringScrollViewPackage} from '@react-native-oh-tpl/react-native-spring-scrollview/ts';
+
+export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
+  return [
+    new SamplePackage(ctx),
++   new SpringScrollViewPackage(ctx),
+  ];
+}
+```
+
+打开 `entry/src/main/ets/pages/Index.ets`，添加：
+```diff
+...
++ import{LottieAnimationView,LOTTIE_TYPE} from "@react-native-oh-tpl/lottie-react-native"
++ const arkTsComponentNames: Array<string> =["SampleView.Name","GeneratedSampleView","PropsDisplayer.NAME","LottieAnimationView"];
+
+ @Builder
+ export function buildCustomRNComponent(ctx: ComponentBuilderContext) {
+   Stack() {
+     if (ctx.componentName === SampleView.NAME) {
+       SampleView({
+         ctx: ctx.rnComponentContext,
+         tag: ctx.tag,
+       })
+     }
+     if (ctx.componentName === GeneratedSampleView.NAME) {
+       GeneratedSampleView({
+         ctx: ctx.rnComponentContext,
+         tag: ctx.tag,
+       })
+     }
+     if (ctx.componentName === PropsDisplayer.NAME) {
+       PropsDisplayer({
+         ctx: ctx.rnComponentContext,
+         tag: ctx.tag
+       })
+     }
++     else if (ctx.componentName === LOTTIE_TYPE) {
++       LottieAnimationView({
++         ctx: ctx.rnComponentContext,
++         tag: ctx.tag,
++       })
++     }
+   }
+   .position({ x: 0, y: 0 })
 }
 ```
 
@@ -238,7 +284,8 @@ ohpm install
 
 要使用此库，需要使用正确的 React-Native 和 RNOH 版本。另外，还需要使用配套的 DevEco Studio 和 手机 ROM。
 
-请到三方库相应的 Releases 发布地址查看 Release 配套的版本信息：[react-native-oh-tpl/react-native-cardview Releases](https://github.com/react-native-oh-library/react-native-cardview/releases)
+请到三方库相应的 Releases 发布地址查看 Release 配套的版本信息：[@react-native-oh-tpl/react-native-spring-scrollview Releases](https://github.com/react-native-oh-library/react-native-spring-scrollview/releases)
+
 
 ## 属性
 
@@ -248,18 +295,48 @@ ohpm install
 
 | Name | Description | Type | Required | Platform | HarmonyOS Support  |
 | ---- | ----------- | ---- | -------- | -------- | ------------------ |
-| cornerRadius       | An attribute to set the elevation of the card.                                          | number | No       | All      | yes               |
-| cardElevation       | An attribute to support shadow on pre-lollipop device in android.                 | number | No       | All      | yes               |
-| cardMaxElevation    | An attribute to set the radius of the card.                                               | number | No       | All      | yes               |
-| useCompatPadding     | CardView adds additional padding to draw shadows on platforms before Lollipop.         | boolean | No       | All      | yes               |
-| cornerOverlap        | On pre-Lollipop platforms, CardView does not clip the bounds of the Card for the rounded corners. | boolean | No   | All  | yes               |
-| backgroundColor      | The background color of the card.                                                          | number | No       | All      | yes               |
+| contentStyle | set content style	        | ViewStyle  | yes | iOS/Android      | yes |
+| bounces  | 	Bounces if the content offset is out of the content view. It won't be bounces on the horizontal direction if the content view is not wider than the wrapper view although bounces is true. But it will on the vertical direction.        | boolean  | yes | iOS/Android      | yes |
+| scrollEnabled  | scrollEnabled         | boolean  | yes | iOS/Android      | yes |
+| directionalLockEnabled  | When true, the SpringScrollView will try to lock to only vertical or horizontal scrolling while dragging.        | boolean  | yes | iOS/Android      | yes |
+| initialContentOffset  | initial content offset. Only works when initiation.         |  Offset  | yes | iOS/Android      | yes |
+| showsVerticalScrollIndicator  | showsVerticalScrollIndicator         |  boolean | yes | iOS/Android      | no |
+| showsHorizontalScrollIndicator  | showsHorizontalScrollIndicator         |  boolean  | yes | iOS/Android      | no |
+| refreshHeader  | refresh header         |  React.ComponentClass<RefreshHeaderPropType,RefreshHeaderStateType>  | yes | iOS/Android      | yes |
+| loadingFooter  | loading header         |  React.ComponentClass<LoadingFooterPropType,LoadingFooterStateType>  | yes | iOS/Android      | yes |
+| onRefresh | he callback when refreshing. When this props is configured, a refresh header will be add on the top of the SpringScrollView         |  	()=>any  | yes | iOS/Android      | yes |
+| onLoading()  | The callback of loading. If set this prop, a loading footer will add to the botom of the SpringScrollView         |  ()=>any  | yes | iOS/Android      | yes |
+| allLoaded  | Whether the data is all loaded.         |  boolean  | yes | iOS/Android      | yes |
+| textInputRefs  |  text input      |  any[]  | yes | iOS/Android      | yes |
+| inverted  | inverted. It is a service for LargeList.         |  boolean  | yes | iOS/Android      | yes |
+| inputToolBarHeight  | set height of the input toolbar        |  number  | yes | iOS/Android      | yes |
+| tapToHideKeyboard  | hide the currently displayed keyboard        |  boolean  | yes | iOS/Android      | yes |
+| onTouchBegin()  | begin touch         | ()=>any  | yes | iOS/Android      | yes|
+| onTouchFinish()   | touch finished         | ()=>any | yes | iOS/Android      | yes|
+| beginRefresh()  | If you want to begin refreshing programally without finger draging, call this method after initialized.         | Promise<any>  | yes | iOS/Android      | yes|
+| endRefresh()  | End the refreshing status.        | void  | yes | iOS/Android      | yes|
+| endLoading()  | End the loading status.        | void  | yes | iOS/Android      | yes|
+| scrollTo()  | animate scroll to a specific position          | Promise<void>  | yes | iOS/Android      | yes|
+| scroll()  | scroll animation to a specific position        | Promise<void>  | yes | iOS/Android      | yes|
+| scrollToBegin()  | scroll begin         | Promise<void>  | yes | iOS/Android      | yes|
+| scrollToEnd()  | scroll end         | Promise<void>  | yes | iOS/Android      | yes|
+| onScroll()  | scroll         | (evt: ScrollEvent) => any  | yes | iOS/Android      | yes|
+| onNativeContentOffsetExtract  |  calculate content offset       |  NativeContentOffset | yes | iOS/Android      | yes|
+| onScrollBeginDrag()  | an event that is triggered when the user starts dragging (scrolling) content.         | ()=>any  | yes | iOS/Android     | yes|
+| onMomentumScrollBegin()  | When the user scrolls content and the momentum scroll animation begins, it triggers an event.         | ()=>any  | yes | iOS/Android      | yes|
+| onMomentumScrollEnd()  | When the user scrolls content and the momentum scroll animation ends, it triggers an event.         | ()=>any  | yes | iOS/Android      | yes|
+| onSizeChange  | The callback when the wrapper view size changed.         | (size: Size) => any | yes | iOS/Android      | yes |
+| onContentSizeChange  | The callback when the content view size changed.         | (size: Size) => any  | yes | iOS/Android      | yes |
 
 ## 遗留问题
+
+- [ ] showsVerticalScrollIndicator属性harmony暂不支持[issue#3](https://github.com/react-native-oh-library/react-native-spring-scrollview/issues/3)
+- [ ] showsHorizontalScrollIndicator属性harmony暂不支持[issue#4](https://github.com/react-native-oh-library/react-native-spring-scrollview/issues/4)
 
 ## 其他
 
 ## 开源协议
 
-本项目基于 [The MIT License](https://github.com/Kishanjvaghela/react-native-cardview/blob/master/LICENSE)，请自由地享受和参与开源。
+本项目基于 [The MIT License (MIT)](https://github.com/bolan9999/react-native-spring-scrollview/blob/master/LICENSE) ，请自由地享受和参与开源。
+
 <!-- {% endraw %} -->

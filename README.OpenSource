@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "react-native-spring-scrollview",
+        "License": "MIT License",
+        "License File": "https://github.com/bolan9999/react-native-spring-scrollview/blob/master/LICENSE",
+        "Version Number": "3.0.2",
+        "Owner" : "xiafeng@huawei.com",
+        "Upstream URL": "https://github.com/bolan9999/react-native-spring-scrollview/tree/master",
+        "Description": "A android like toast for react-native support for HarmonyOS"
+    }
+]

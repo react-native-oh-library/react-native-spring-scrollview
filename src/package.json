@@ -1,7 +1,11 @@
 {
-  "name": "react-native-spring-scrollview",
-  "version": "3.0.2",
-  "main": "index.js",
+  "name": "@react-native-oh-tpl/react-native-spring-scrollview",
+  "harmony": {
+	  "alias":"react-native-spring-scrollview"
+  },
+  "version": "2.0.22-0.0.1",
+  "description": "An cross-platform (iOS & Android) spring ScrollView",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -9,20 +13,15 @@
     "react-native",
     "scroll",
     "ScrollView",
+    "iOS style",
     "react-native-scrollview",
     "spring",
     "rebound",
     "bounces",
     "cross-platform"
   ],
-  "license": "MIT",
-  "peerDependencies": {
-    "react": "^16.3.1",
-    "react-native": "^0.60.0"
+  "dependencies": {
+	  "react-native-spring-scrollview": "^2.0.22"
   },
-  "optionalDependencies":{
-    "lottie-ios": "3.1.8",
-    "lottie-react-native": "^4.0.2",
-    "@react-native-community/async-storage": "^1.12.1"
-  }
+  "license": "MIT"
 }
