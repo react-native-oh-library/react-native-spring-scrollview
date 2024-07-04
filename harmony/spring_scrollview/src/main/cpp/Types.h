@@ -24,6 +24,7 @@
 
 #ifndef HARMONY_TYPES_H
 #define HARMONY_TYPES_H
+
 namespace Types {
 struct Offset {
     float x;
@@ -50,8 +51,5 @@ struct Point {
     float y;
     Point(float xVal = 0.0f, float yVal = 0.0f);
 };
-
 }; // namespace Types
-
-
 #endif

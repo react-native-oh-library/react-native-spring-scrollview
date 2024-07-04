@@ -30,12 +30,10 @@
 #include "RNOH/RNInstanceCAPI.h"
 
 namespace rnoh {
-
 class SpringScrollViewArkTSMessageHandler : public rnoh::ArkTSMessageHandler {
+    
 public:
     static SpringScrollViewArkTSMessageHandler *getInstance();
-
-public:
     void handleArkTSMessage(const Context &ctx) override;
 };
 } // namespace rnoh

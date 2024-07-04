@@ -29,11 +29,8 @@
 #include <react/renderer/graphics/Rect.h>
 #include <react/renderer/graphics/Size.h>
 
-
 namespace facebook {
 namespace react {
-
-
 class SpringScrollViewState final {
 public:
     Point contentOffset;
@@ -41,6 +38,5 @@ public:
     int scrollAwayPaddingTop;
     Size getContentSize() const;
 };
-
 } // namespace react
 } // namespace facebook

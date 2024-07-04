@@ -25,7 +25,6 @@
 
 namespace rnoh {
     using namespace facebook;
-
     SpringScrollViewTurboModule::SpringScrollViewTurboModule(const ArkTSTurboModule::Context ctx,
                                                                  const std::string name)
         : ArkTSTurboModule(ctx, name) {
@@ -43,5 +42,4 @@ namespace rnoh {
             ARK_METHOD_METADATA(cancelAnimation, 0),
         };
     }
-
 } // namespace rnoh

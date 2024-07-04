@@ -33,9 +33,7 @@ namespace react {
 RNCSpringScrollViewProps::RNCSpringScrollViewProps(const PropsParserContext &context,
                                                    const RNCSpringScrollViewProps &sourceProps,
                                                    const RawProps &rawProps)
-
     : ViewProps(context, sourceProps, rawProps),
-
       initialContentOffset(convertRawProp(context, rawProps, "initialContentOffset", sourceProps.initialContentOffset,
                                           Types::Offset(0.0f, 0.0f))),
       refreshHeaderHeight(

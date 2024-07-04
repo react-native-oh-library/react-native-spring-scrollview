@@ -26,6 +26,6 @@
 
 namespace facebook::react {
 
-Size SpringScrollViewState::getContentSize() const { return contentBoundingRect.size; }
+Size SpringScrollViewState::getContentSize() const { return contentBoundingRect.size;}
 
 } // namespace facebook::react

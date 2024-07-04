@@ -35,7 +35,6 @@
 #include "SpringScrollViewArkTSMessageHandler.h"
 
 namespace rnoh {
-
 class SpringScrollViewPackageComponentInstanceFactoryDelegate : public ComponentInstanceFactoryDelegate {
 public:
     using ComponentInstanceFactoryDelegate::ComponentInstanceFactoryDelegate;
@@ -47,6 +46,7 @@ public:
         return nullptr;
     }
 };
+
 class SpringScrollViewContextFactoryDelegate : public TurboModuleFactoryDelegate {
 public:
     SharedTurboModule createTurboModule(Context ctx, const std::string &name) const override {
@@ -73,7 +73,6 @@ public:
     ComponentJSIBinderByString createComponentJSIBinderByName() override {
         return {
             {"RNCSpringScrollView", std::make_shared<SpringScrollViewJSIBinder>()},
-
         };
     }
 
@@ -86,7 +85,6 @@ public:
     EventEmitRequestHandlers createEventEmitRequestHandlers() override {
         return {std::make_shared<SpringScrollViewEmitRequestHandler>()};
     }
-
 
     std::unique_ptr<TurboModuleFactoryDelegate> createTurboModuleFactoryDelegate() override {
         return std::make_unique<SpringScrollViewContextFactoryDelegate>();

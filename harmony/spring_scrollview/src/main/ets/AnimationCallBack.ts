@@ -23,6 +23,5 @@
  */
 export interface AnimationCallBack {
   onUpdate(value: number);
-
   onEnd();
 }

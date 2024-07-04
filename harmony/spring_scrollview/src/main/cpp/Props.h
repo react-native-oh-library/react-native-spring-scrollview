@@ -30,11 +30,10 @@
 #include <react/renderer/components/view/ViewProps.h>
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
-
 #include "Types.h"
+
 namespace facebook {
 namespace react {
-
 class JSI_EXPORT RNCSpringScrollViewProps final : public ViewProps {
 public:
     RNCSpringScrollViewProps() = default;

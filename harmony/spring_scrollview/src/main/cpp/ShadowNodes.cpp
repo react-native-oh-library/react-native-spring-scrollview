@@ -24,27 +24,23 @@
 
 #include "Props.h"
 #include "ShadowNodes.h"
+
 namespace facebook {
 namespace react {
-
 extern const char RNCSpringScrollViewComponentName[] = "RNCSpringScrollView";
 
 void RNCSpringScrollViewShadowNode::updateStateIfNeeded() {
     ensureUnsealed();
-
     auto contentBoundingRect = Rect{};
     for (const auto &childNode : getLayoutableChildNodes()) {
         contentBoundingRect.unionInPlace(childNode->getLayoutMetrics().frame);
     }
-
     auto state = getStateData();
-
     if (state.contentBoundingRect != contentBoundingRect) {
         state.contentBoundingRect = contentBoundingRect;
         setStateData(std::move(state));
     }
 }
-
 
 #pragma mark - LayoutableShadowNode
 
@@ -58,7 +54,5 @@ Point RNCSpringScrollViewShadowNode::getContentOriginOffset() const {
     auto contentOffset = stateData.contentOffset;
     return {-contentOffset.x, -contentOffset.y + stateData.scrollAwayPaddingTop};
 }
-
-
 } // namespace react
 } // namespace facebook

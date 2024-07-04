@@ -34,8 +34,8 @@
 #include <EventBus/EventHandler.h>
 #include <EventBus/EventBus.h>
 #include <SpringScrollViewEvent.h>
-namespace rnoh {
 
+namespace rnoh {
 class SpringScrollViewNodeDelegate {
 public:
     virtual ~SpringScrollViewNodeDelegate() = default;

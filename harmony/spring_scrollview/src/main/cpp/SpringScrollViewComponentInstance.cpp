@@ -27,18 +27,19 @@
 #include <folly/dynamic.h>
 #include "RNOH/arkui/ArkUINode.h"
 #include "RNOH/arkui/ScrollNode.h"
+
 namespace rnoh {
 SpringScrollViewComponentInstance::SpringScrollViewComponentInstance(Context context)
     : CppComponentInstance(std::move(context)) {
     m_springStackNode.setSpringScrollViewNodeDelegate(this);
 }
 
-
 void SpringScrollViewComponentInstance::onChildInserted(ComponentInstance::Shared const &childComponentInstance,
                                                         std::size_t index) {
     CppComponentInstance::onChildInserted(childComponentInstance, index);
     m_springStackNode.insertChild(childComponentInstance->getLocalRootArkUINode(), index);
 }
+
 void SpringScrollViewComponentInstance::onChildRemoved(ComponentInstance::Shared const &childComponentInstance) {
     CppComponentInstance::onChildRemoved(childComponentInstance);
     m_springStackNode.removeChild(childComponentInstance->getLocalRootArkUINode());
@@ -86,32 +87,37 @@ void SpringScrollViewComponentInstance::onRefresh() {
     DLOG(INFO) << "onRefresh";
     m_eventEmitter->onRefresh({});
 };
+
 void SpringScrollViewComponentInstance::onLoading() {
     DLOG(INFO) << "onLoading";
     m_eventEmitter->onLoading({});
 };
+
 void SpringScrollViewComponentInstance::onTouchBegin() {
     DLOG(INFO) << "onTouchBegin";
     m_eventEmitter->onTouchBegin({});
 };
+
 void SpringScrollViewComponentInstance::onTouchEnd() {
     DLOG(INFO) << "onTouchEnd";
     m_eventEmitter->onTouchFinish({});
 };
+
 void SpringScrollViewComponentInstance::onMomentumScrollBegin() {
     DLOG(INFO) << "onMomentumScrollBegin";
     m_eventEmitter->onMomentumScrollBegin({});
 };
+
 void SpringScrollViewComponentInstance::onMomentumScrollEnd() {
     DLOG(INFO) << "onMomentumScrollEnd";
     m_eventEmitter->onMomentumScrollEnd({});
 };
+
 void SpringScrollViewComponentInstance::onScroll(
     const facebook::react::RNCSpringScrollViewEventEmitter::OnScroll &onScroll) {
     DLOG(INFO) << "onScroll";
     m_eventEmitter->onScroll(onScroll);
 };
-
 
 void SpringScrollViewComponentInstance::callArkTSInnerAnimationStart(float from, float to, long duration) {
     DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSInnerAnimationStart "
@@ -142,7 +148,6 @@ void SpringScrollViewComponentInstance::callArkTSOuterAnimationStart(float from,
         arkTsTurboModule->callSync("startOuterAnimation", args);
     }
 }
-
 
 void SpringScrollViewComponentInstance::callArkTSInnerHorizontalAnimationStart(float from, float to, long duration) {
     DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSInnerHorizontalAnimationStart "
@@ -306,10 +311,8 @@ bool SpringScrollViewComponentInstance::isHandlingTouches() const { return this-
 
 void SpringScrollViewComponentInstance::setSwiperStatus(bool swiperStatus) { this->swiperStatus = swiperStatus; }
 
-
 void SpringScrollViewComponentInstance::finalizeUpdates() {
-    LOG(INFO) << "SpringScrollViewComponentInstance finalizeUpdates";
+    DLOG(INFO) << "SpringScrollViewComponentInstance finalizeUpdates";
     this->getLocalRootArkUINode().init();
 }
-
 } // namespace rnoh

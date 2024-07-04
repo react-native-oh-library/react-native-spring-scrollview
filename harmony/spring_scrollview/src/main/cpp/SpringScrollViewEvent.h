@@ -28,10 +28,11 @@
 #include <arkui/native_type.h>
 #include <string>
 #include "Types.h"
+
 class SpringScrollViewEvent : public EventBus::Event {
 public:
     explicit SpringScrollViewEvent(double animationValue) : animationValue(animationValue) {}
-
+    
     virtual ~SpringScrollViewEvent() = default;
 
     const std::type_info &getType() override { return typeid(SpringScrollViewEvent); }
@@ -47,12 +48,15 @@ public:
     void setMessageType(std::string messageType) { this->messageType = messageType; }
 
     std::string getMessageType() const { return this->messageType; }
+    
     void setNodeHandle(ArkUI_NodeHandle nodeHandle) { this->nodeHandle = nodeHandle; }
+    
     ArkUI_NodeHandle getNodeHandle() const { return this->nodeHandle; }
 
     void setEventSpringScrollViewNodeDelegate(void *eventSpringScrollViewNodeDelegate) {
         this->m_eventSpringScrollViewNodeDelegate = eventSpringScrollViewNodeDelegate;
     }
+    
     void *getEventSpringScrollViewNodeDelegate() const { return this->m_eventSpringScrollViewNodeDelegate; }
 
     void setRefreshStatus(std::string refreshStatus) { this->refreshStatus = refreshStatus; }
@@ -90,7 +94,6 @@ public:
     void setEventContentInsets(Types::EdgeInsets eventContentInsets) { this->eventContentInsets = eventContentInsets; }
 
     Types::EdgeInsets getEventContentInsets() { return this->eventContentInsets; }
-
 
     void setEventMomentumScrolling(bool eventMomentumScrolling) {
         this->eventMomentumScrolling = eventMomentumScrolling;

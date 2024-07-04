@@ -25,10 +25,8 @@
 #include "RNOH/ArkTSTurboModule.h"
 
 namespace rnoh {
-
 class JSI_EXPORT SpringScrollViewTurboModule : public ArkTSTurboModule {
 public:
     SpringScrollViewTurboModule(const ArkTSTurboModule::Context ctx, const std::string name);
 };
-
 } // namespace rnoh

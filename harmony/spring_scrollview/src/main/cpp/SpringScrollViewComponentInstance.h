@@ -85,7 +85,5 @@ public:
     void setSwiperStatus(bool swiperStatus) override;
     void finalizeUpdates() override;
 };
-
 } // namespace rnoh
-
 #endif // HARMONY_SpringScrollViewCOMPONENTINSTANCE_H

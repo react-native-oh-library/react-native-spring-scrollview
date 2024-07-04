@@ -30,7 +30,6 @@
 #include "RNOH/EventEmitRequestHandler.h"
 
 namespace rnoh {
-
 class SpringScrollViewEmitRequestHandler : public EventEmitRequestHandler {
 public:
     void handleEvent(EventEmitRequestHandler::Context const &ctx) override {
@@ -45,7 +44,6 @@ public:
         } else if (eventName == "onLoading") {
             eventEmitter->onLoading({});
         } else if (eventName == "onTouchBegin") {
-            ;
             eventEmitter->onTouchBegin({});
         } else if (eventName == "onTouchEnd") {
             eventEmitter->onTouchEnd({});
@@ -62,6 +60,5 @@ public:
         }
     }
 };
-
 } // namespace rnoh
 #endif

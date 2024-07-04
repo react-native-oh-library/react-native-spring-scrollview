@@ -23,8 +23,8 @@
  */
 
 #include "Types.h"
-namespace Types {
 
+namespace Types {
 Offset::Offset(float xVal, float yVal) : x(xVal), y(yVal) {}
 
 EdgeInsets::EdgeInsets(float t, float b, float l, float r) : top(t), bottom(b), left(l), right(r) {}
@@ -32,5 +32,4 @@ EdgeInsets::EdgeInsets(float t, float b, float l, float r) : top(t), bottom(b), 
 Size::Size(float w, float h) : width(w), height(h) {}
 
 Point::Point(float xVal, float yVal) : x(xVal), y(yVal) {}
-
 } // namespace Types

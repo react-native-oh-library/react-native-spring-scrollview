@@ -27,13 +27,13 @@
 #include <EventBus/EventHandler.h>
 #include "EventBus/EventBus.h"
 #include <SpringScrollViewEvent.h>
+
 namespace rnoh {
 void SpringScrollViewArkTSMessageHandler::handleArkTSMessage(const Context &ctx) {
-
-
     auto rnInstance = ctx.rnInstance.lock();
-    if (!rnInstance)
+    if (!rnInstance) {
         return;
+    }
 
     DLOG(INFO) << "SpringScrollViewArkTSMessageHandler handleArkTSMessage:" << ctx.messageName << ctx.messagePayload;
 
@@ -54,5 +54,4 @@ void SpringScrollViewArkTSMessageHandler::handleArkTSMessage(const Context &ctx)
         EventBus::EventBus::getInstance()->fire(baseEvent);
     }
 }
-
 } // namespace rnoh

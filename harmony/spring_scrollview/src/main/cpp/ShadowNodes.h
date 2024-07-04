@@ -38,7 +38,6 @@ namespace facebook {
 namespace react {
 
 JSI_EXPORT extern const char RNCSpringScrollViewComponentName[];
-
 class RNCSpringScrollViewShadowNode final
     : public ConcreteViewShadowNode<RNCSpringScrollViewComponentName, RNCSpringScrollViewProps,
                                     RNCSpringScrollViewEventEmitter, SpringScrollViewState> {
@@ -49,12 +48,10 @@ public:
 
     void layout(LayoutContext layoutContext) override;
     Point getContentOriginOffset() const override;
-
+    
 private:
     void updateStateIfNeeded();
 };
-
-
 } // namespace react
 } // namespace facebook
 #endif

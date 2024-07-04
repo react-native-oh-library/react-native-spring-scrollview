@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 import { TurboModule } from '@rnoh/react-native-openharmony/ts';
 import { DecelerateAnimation } from './DecelerateAnimation';
 import { AnimationCallBack } from './AnimationCallBack';
@@ -98,7 +99,6 @@ export class SpringScrollViewModule extends TurboModule {
     }
     this.mVerticalAnimation.start(callBack)
   }
-
 
   startHorizontalReboundAnimation(from: number, to: number, duration: number) {
     this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);

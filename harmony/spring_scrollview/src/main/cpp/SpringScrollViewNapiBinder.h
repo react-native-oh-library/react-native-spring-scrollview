@@ -28,7 +28,6 @@
 #include "Props.h"
 
 namespace rnoh {
-
 class SpringScrollViewNapiBinder : public ViewComponentNapiBinder {
 public:
     napi_value createProps(napi_env env, facebook::react::ShadowView const shadowView) override {
@@ -50,6 +49,5 @@ public:
         return napiViewProps;
     };
 };
-
 } // namespace rnoh
 #endif

@@ -67,7 +67,6 @@ public:
     void onSizeChange(OnSizeChange value) const;
     void onContentSizeChange(OnContentSizeChange value) const;
 };
-
 } // namespace react
 } // namespace facebook
 #endif
