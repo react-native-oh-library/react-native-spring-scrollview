@@ -137,7 +137,12 @@ private:
     float moveX = 0;
     float contentHeight;
     bool isInitialContentOffset = false;
-
+    bool isMove = false;
+    bool isDestory = false;
+    float recordKeyBoardPositioY = 0;
+    bool recordKeyBoardShow = false;
+    std::chrono::high_resolution_clock::time_point keyboardHideLastTime;
+    const int DISMINATE_KEYBOARD_SHOW_HIDE = 99999;
     bool cancelAllAnimations();
     void onMove(ArkUI_GestureEvent *evt);
     void onDown(ArkUI_GestureEvent *evt);

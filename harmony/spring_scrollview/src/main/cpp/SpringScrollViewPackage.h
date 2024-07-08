@@ -40,7 +40,7 @@ public:
     using ComponentInstanceFactoryDelegate::ComponentInstanceFactoryDelegate;
 
     ComponentInstance::Shared create(ComponentInstance::Context ctx) override {
-        if (ctx.componentName == "RNCSpringScrollView") {
+        if (ctx.componentName == "SpringScrollView") {
             return std::make_shared<SpringScrollViewComponentInstance>(std::move(ctx));
         }
         return nullptr;
@@ -72,13 +72,13 @@ public:
 
     ComponentJSIBinderByString createComponentJSIBinderByName() override {
         return {
-            {"RNCSpringScrollView", std::make_shared<SpringScrollViewJSIBinder>()},
+            {"SpringScrollView", std::make_shared<SpringScrollViewJSIBinder>()},
         };
     }
 
     ComponentNapiBinderByString createComponentNapiBinderByName() override {
         return {
-            {"RNCSpringScrollView", std::make_shared<SpringScrollViewNapiBinder>()},
+            {"SpringScrollView", std::make_shared<SpringScrollViewNapiBinder>()},
         };
     }
 

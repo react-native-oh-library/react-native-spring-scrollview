@@ -34,6 +34,8 @@ SpringScrollViewNode::SpringScrollViewNode()
     : ArkUINode(NativeNodeApi::getInstance()->createNode(ArkUI_NodeType::ARKUI_NODE_STACK)),
       m_stackArkUINodeHandle(nullptr) {}
 SpringScrollViewNode::~SpringScrollViewNode() {
+    this->isDestory = true;
+    m_scrollNodeDelegate->callArkTSAnimationCancel();
     this->isInitialContentOffset = false;
     this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
     this->recordEventModel->setRefreshStatus("waiting");
@@ -112,27 +114,30 @@ void SpringScrollViewNode::registerPanGesture() {
         float y = OH_ArkUI_PanGesture_GetOffsetY(event);
 
         if (actionType == GESTURE_EVENT_ACTION_ACCEPT) {
-            DLOG(INFO) << "SpringScrollViewNode GESTURE_EVENT_ACTION_ACCEPT x:" << x << " y:" << y;
-            springScrollViewNode->downX = x;
-            springScrollViewNode->downY = y;
-            springScrollViewNode->onDown(event);
+                DLOG(INFO) << "SpringScrollViewNode GESTURE_EVENT_ACTION_ACCEPT x:" << x << " y:" << y;
+                springScrollViewNode->downX = x;
+                springScrollViewNode->downY = y;
+                springScrollViewNode->onDown(event);
         } else if (actionType == GESTURE_EVENT_ACTION_UPDATE) {
-            DLOG(INFO) << "SpringScrollViewNode GESTURE_EVENT_ACTION_UPDATE x:" << x << " y:" << y;
-            springScrollViewNode->moveX = x;
-            springScrollViewNode->moveY = y;
-            if ((springScrollViewNode->moveX - springScrollViewNode->downX > 1.5) ||
-                (springScrollViewNode->moveX - springScrollViewNode->downX < -1.5)) {
-                springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(true);
-            }
-            if ((springScrollViewNode->moveY - springScrollViewNode->downY > 1.5) ||
-                (springScrollViewNode->moveY - springScrollViewNode->downY < -1.5)) {
-                springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(true);
-            }
-            springScrollViewNode->onMove(event);
+                DLOG(INFO) << "SpringScrollViewNode GESTURE_EVENT_ACTION_UPDATE x:" << x << " y:" << y;
+                springScrollViewNode->moveX = x;
+                springScrollViewNode->moveY = y;
+                if ((springScrollViewNode->moveX - springScrollViewNode->downX > 1.5) ||
+                    (springScrollViewNode->moveX - springScrollViewNode->downX < -1.5)) {
+                    springScrollViewNode->isMove = true;
+                    springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(true);
+                }
+                if ((springScrollViewNode->moveY - springScrollViewNode->downY > 1.5) ||
+                    (springScrollViewNode->moveY - springScrollViewNode->downY < -1.5)) {
+                    springScrollViewNode->isMove = true;
+                    springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(true);
+                }
+                springScrollViewNode->onMove(event);
         } else if (actionType == GESTURE_EVENT_ACTION_END) {
-            springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(false);
-            DLOG(INFO) << "SpringScrollViewNode onUp GESTURE_EVENT_ACTION_END";
-            springScrollViewNode->onUp(event);
+                springScrollViewNode->m_scrollNodeDelegate->setSwiperStatus(false);
+                DLOG(INFO) << "SpringScrollViewNode onUp GESTURE_EVENT_ACTION_END";
+                springScrollViewNode->onUp(event);
+                springScrollViewNode->isMove = false;         
         }
     };
     this->panGestureApi->setGestureEventTarget(
@@ -142,8 +147,8 @@ void SpringScrollViewNode::registerPanGesture() {
 }
 
 void SpringScrollViewNode::onMove(ArkUI_GestureEvent *evt) {
-    if (!this->scrollEnabled) {
-        return;
+    if (!this->scrollEnabled || !isMove) {
+            return;
     }
     float x = OH_ArkUI_PanGesture_GetOffsetX(evt);
     float y = OH_ArkUI_PanGesture_GetOffsetY(evt);
@@ -153,6 +158,9 @@ void SpringScrollViewNode::onMove(ArkUI_GestureEvent *evt) {
 }
 
 void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
+    auto recordEvent =
+            std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
+    this->contentOffset = recordEvent->getEventContentOffset();
     refreshStatus = "waiting";
     loadingStatus = "waiting";
     float x = OH_ArkUI_PanGesture_GetOffsetX(evt);
@@ -191,6 +199,7 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
 }
 
 void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
+    if(!isMove) return;
     this->onMove(evt);
     dragging = false;
     float vy = 0.020;
@@ -538,6 +547,7 @@ float SpringScrollViewNode::getXDampingCoefficient() {
 }
 
 void SpringScrollViewNode ::setContentOffset(float x, float y) {
+    if(this->isDestory) return;
     this->contentOffset.x = x;
     this->contentOffset.y = y;
     this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
@@ -550,13 +560,13 @@ void SpringScrollViewNode ::setContentOffset(float x, float y) {
     auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
     EventBus::EventBus::getInstance()->setEvent(baseEvent);
     std::array<ArkUI_NumberValue, 3> translateValue = {
-        ArkUI_NumberValue{.f32 = -this->contentOffset.x}, {.f32 = -this->contentOffset.y}, {.f32 = 0}};
-    ArkUI_AttributeItem translateItem = {translateValue.data(), translateValue.size()};
+            ArkUI_NumberValue{.f32 = -this->contentOffset.x}, {.f32 = -this->contentOffset.y}, {.f32 = 0}};
+        ArkUI_AttributeItem translateItem = {translateValue.data(), translateValue.size()};
     NativeNodeApi::getInstance()->setAttribute(m_stackArkUINodeHandle, NODE_TRANSLATE, &translateItem);
     facebook::react::RNCSpringScrollViewEventEmitter::OnScroll onScroll = {
         {contentOffset.x / 2, contentOffset.y / 2}, refreshStatus, loadingStatus};
     m_scrollNodeDelegate->onScroll(onScroll);
-    DLOG(INFO) << "SpringScrollViewNode registerPanGesture setContentOffset loadingStatus:" << loadingStatus
+    DLOG(INFO) << "SpringScrollViewNode setContentOffset loadingStatus:" << loadingStatus
                << " refreshStatus:" << refreshStatus << " contentOffset.y " << contentOffset.y << " contentOffset.x "
                << contentOffset.x;
 }
@@ -642,21 +652,34 @@ void SpringScrollViewNode ::endRefresh() {
     contentOffset.x = 0;
 }
 
-void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
-    DLOG(INFO) << "SpringScrollViewNode scrollTo x:" << x << " y:" << y << " animated:" << animated
-               << " contentOffset.x:" << contentOffset.x;
-    cancelAllAnimations();
-    if (!animated) {
-        moveToOffset(x, y);
-        return;
+   void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
+        if( x == DISMINATE_KEYBOARD_SHOW_HIDE && this->recordKeyBoardShow) return;
+        if(y == DISMINATE_KEYBOARD_SHOW_HIDE){
+             this->recordKeyBoardShow = false;
+             y = this->recordKeyBoardPositioY;
+             this->keyboardHideLastTime = std::chrono::high_resolution_clock::now();
+        }
+        else if(x == DISMINATE_KEYBOARD_SHOW_HIDE){
+             auto keyboardShowCurrentTime = std::chrono::high_resolution_clock::now();
+             std::chrono::duration<double> duration = keyboardShowCurrentTime - this->keyboardHideLastTime;
+             this->recordKeyBoardShow = true;
+             if(duration.count() > 1.5) {
+               this->recordKeyBoardPositioY = contentOffset.y;
+            }
+        }
+        cancelAllAnimations();
+        if (!animated) {
+            moveToOffset(x, y);
+            return;
+        }
+        m_scrollNodeDelegate->callArkTSScrollYStart(contentOffset.y, y, 500);
+        if (x != contentOffset.x && x!=DISMINATE_KEYBOARD_SHOW_HIDE) {
+            m_scrollNodeDelegate->callArkTSScrollXStart(contentOffset.x, x, 500);
+        }
     }
-    m_scrollNodeDelegate->callArkTSScrollYStart(contentOffset.y, y, 500);
-    if (x != contentOffset.x) {
-        m_scrollNodeDelegate->callArkTSScrollXStart(contentOffset.x, x, 500);
-    }
-}
 
 void SpringScrollViewNode::onEvent(std::shared_ptr<SpringScrollViewEvent> &event) {
+    if(this->isDestory) return;
     auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
     this->m_stackArkUINodeHandle = recordEvent->getNodeHandle();
     this->m_scrollNodeDelegate = (SpringScrollViewNodeDelegate *)recordEvent->getEventSpringScrollViewNodeDelegate();
