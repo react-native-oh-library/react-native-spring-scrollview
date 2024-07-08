@@ -20,7 +20,17 @@ export class RefreshHeader extends React.Component<
 
   constructor(props: HeaderPropType) {
     super(props);
-    this.state = { status: "waiting" };
+    this.state = { status: "waiting",rotateY:0};
+    this.loadingAnimation=new Animated.Value(0);
+  }
+
+  changeToY(value) {
+    if(this.state.status=="pulling" || this.state.status=="pullingEnough"){
+      if(-value*2.5 >= 180){
+         value = -72; 
+      }
+      this.setState({ rotateY: value });
+    }
   }
 
   changeToState(newStatus: HeaderStatus) {
@@ -29,7 +39,6 @@ export class RefreshHeader extends React.Component<
   }
 
   onStateChange(oldStatus: HeaderStatus, newStatus: HeaderStatus) {
-    // console.log("newStatus", newStatus);
     this.setState({ status: newStatus });
   }
 

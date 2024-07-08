@@ -13,7 +13,9 @@ import {
   Animated,
   View,
   StyleSheet,
-  Text
+  Text,
+  Easing
+
 } from "react-native";
 
 export class NormalFooter extends LoadingFooter {
@@ -39,8 +41,50 @@ export class NormalFooter extends LoadingFooter {
     );
   }
 
+  startLoadAnimation = () => {
+    this.loadingAnimation.setValue(0);
+    Animated.timing(this.loadingAnimation, {
+      toValue: 1,
+      duration: 4000,
+      easing: Easing.linear,
+      useNativeDriver:false
+    }).start(() => this.startLoadAnimation());
+  }
+
   _renderIcon() {
     const s = this.state.status;
+    if(Platform.OS === "harmony") {
+    this.startLoadAnimation();
+    const rotateValue=this.loadingAnimation.interpolate({
+      inputRange: [0,1],
+      outputRange: ["0deg", "360deg"]
+    })
+    if (s === "loading" || s === "cancelLoading" || s === "rebound") {
+          return <Animated.Image
+        source={require("./Customize/res/icon_load.png")}
+        style={{
+          transform: [
+            {
+              rotate: rotateValue
+            }
+          ]
+        }}
+      />;
+    }
+    return (
+      <Animated.Image
+        source={require("./Customize/res/arrow.png")}
+        style={{
+          transform: [
+            {
+              rotate: 180-this.state.rotateY * 2.5 + "deg"
+            }
+          ]
+        }}
+      />
+    );
+  }
+  else {
     if (s === "loading" || s === "cancelLoading" || s === "rebound") {
       return <ActivityIndicator color={"gray"}/>;
     }
@@ -65,6 +109,7 @@ export class NormalFooter extends LoadingFooter {
         }}
       />
     );
+   }
   }
 
   renderContent(){
