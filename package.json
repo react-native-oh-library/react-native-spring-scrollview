@@ -1,6 +1,6 @@
 {
   "name": "@react-native-oh-tpl/react-native-spring-scrollview",
-  "version": "2.0.22-0.0.1",
+  "version": "2.0.22-0.0.2",
   "description": "HarmonyOS platform spring ScrollView",
   "main": "src/index.js",
   "harmony": {
