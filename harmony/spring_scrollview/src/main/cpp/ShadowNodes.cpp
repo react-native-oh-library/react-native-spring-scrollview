@@ -27,7 +27,7 @@
 
 namespace facebook {
 namespace react {
-extern const char RNCSpringScrollViewComponentName[] = "RNCSpringScrollView";
+extern const char RNCSpringScrollViewComponentName[] = "SpringScrollView";
 
 void RNCSpringScrollViewShadowNode::updateStateIfNeeded() {
     ensureUnsealed();
