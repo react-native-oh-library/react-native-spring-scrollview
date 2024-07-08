@@ -9,20 +9,52 @@
 
 import React from "react";
 import { RefreshHeader } from "../RefreshHeader";
-import { View } from "react-native";
+import { View, Animated, Easing } from "react-native";
 
-let LottieView;
+import LottieView from 'lottie-react-native'
 
 export class CommonLottieFooter extends RefreshHeader {
   static height: number = 100;
 
-  constructor(props){
+  constructor(props) {
     super(props);
-    if (!LottieView) LottieView = require("lottie-react-native");
   }
 
   render() {
     if (this.state.status === "allLoaded") return null;
+    if(Platform.OS === "harmony") {
+    return (
+      <View style={{ flex: 1, marginBottom: 20, alignItems: "center" }}>
+        <LottieView
+          source={
+            require("./res/loading.json")
+          }
+          style={{
+            height: 80,
+            width: 80,
+            display: this.state.status == "loading" ? 'none' : 'flex'
+          }}
+          progress={this.state.rotateY * 0.0138}
+          autoPlay={true}
+          loop={false}
+        />
+
+        <LottieView
+          source={
+            require("./res/loading.json")
+          }
+          style={{
+            height: 80,
+            width: 80,
+            display: this.state.status == "loading" ? 'flex' : 'none'
+          }}
+          autoPlay={true}
+          loop={true}
+        />
+      </View>
+    );
+  }
+  else {
     const { offset, bottomOffset } = this.props;
     let progress = offset.interpolate({
       inputRange: [
@@ -46,5 +78,7 @@ export class CommonLottieFooter extends RefreshHeader {
         />
       </View>
     );
+  }
+
   }
 }

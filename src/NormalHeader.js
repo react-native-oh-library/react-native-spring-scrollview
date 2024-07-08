@@ -13,13 +13,15 @@ import {
   Animated,
   View,
   StyleSheet,
-  Text
+  Text,
+  Easing
 } from "react-native";
 
 export class NormalHeader extends RefreshHeader {
   static height = 80;
 
   static style = "stickyContent";
+
 
   render() {
     return (
@@ -35,8 +37,50 @@ export class NormalHeader extends RefreshHeader {
     );
   }
 
+  startLoadAnimation = () => {
+    this.loadingAnimation.setValue(0);
+    Animated.timing(this.loadingAnimation, {
+      toValue: 1,
+      duration: 4000,
+      easing: Easing.linear,
+      useNativeDriver:false
+    }).start(() => this.startLoadAnimation());
+  }
+
   _renderIcon() {
     const s = this.state.status;
+    if(Platform.OS === "harmony"){
+    this.startLoadAnimation();
+    const rotateValue=this.loadingAnimation.interpolate({
+      inputRange: [0,1],
+      outputRange: ["0deg", "360deg"]
+    })
+    if (s === "refreshing" || s === "rebound") {
+      return <Animated.Image
+        source={require("./Customize/res/icon_load.png")}
+        style={{
+          transform: [
+            {
+              rotate: rotateValue
+            }
+          ]
+        }}
+      />;
+    }
+    return (
+      <Animated.Image
+        source={require("./Customize/res/arrow.png")}
+        style={{
+          transform: [
+            {
+              rotate: -this.state.rotateY * 2.5 + "deg"
+            }
+          ]
+        }}
+      />
+    );
+   }
+   else {
     if (s === "refreshing" || s === "rebound") {
       return <ActivityIndicator color={"gray"}/>;
     }
@@ -56,9 +100,10 @@ export class NormalHeader extends RefreshHeader {
         }}
       />
     );
+   }
   }
 
-  renderContent(){
+  renderContent() {
     return null;
   }
 
