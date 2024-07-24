@@ -78,12 +78,13 @@ public:
     void callArkTSScrollYStart(float from, float to, long duration) override;
     void callArkTSAnimationCancel() override;
     void handleCommand(std::string const &commandName, folly::dynamic const &args) override;
-    void setLayout(facebook::react::LayoutMetrics layoutMetrics) override;
     facebook::react::Size getLayoutSize() override;
     void onStateChanged(SharedConcreteState const &state) override;
     bool isHandlingTouches() const override;
     void setSwiperStatus(bool swiperStatus) override;
     void finalizeUpdates() override;
+    void onScrollBeginDrag() override;
+
 };
 } // namespace rnoh
 #endif // HARMONY_SpringScrollViewCOMPONENTINSTANCE_H

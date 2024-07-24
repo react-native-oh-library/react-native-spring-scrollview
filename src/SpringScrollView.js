@@ -21,7 +21,6 @@ import {
   ViewStyle,
   ScrollView
 } from "react-native";
-import * as TextInputState from "react-native/lib/TextInputState";
 import { FooterStatus } from "./LoadingFooter";
 import { NormalHeader } from "./NormalHeader";
 import { NormalFooter } from "./NormalFooter";
@@ -48,6 +47,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
   _loadingStatus: FooterStatus = "waiting";
   _indicatorAnimation;
   _nativeOffset;
+  _contentOffset: Offset = { x: 0, y: 0 };
 
   constructor(props: SpringScrollViewPropType) {
     super(props);
@@ -112,6 +112,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
         onLayout={this._onWrapperLayoutChange}
         onTouchBegin={(Platform.OS === "android" || Platform.OS === "harmony") && this._onTouchBegin}
         onTouchStart={Platform.OS === "ios" && this._onTouchBegin}
+        onScrollBeginDrag={this._onScrollBeginDrag}
         onMomentumScrollEnd={this._onMomentumScrollEnd}
         scrollEventThrottle={1}
         onNativeContentOffsetExtract={this._nativeOffset}
@@ -285,9 +286,6 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
         input.current.measure((x, y, w, h, l, t) => {
           this._keyboardHeight = t + h - evt.endCoordinates.screenY + this.props.inputToolBarHeight;
           if (Platform.OS === "harmony"){
-            if(this._keyboardHeight > 450){
-               this._keyboardHeight = this._keyboardHeight - 50;
-            }
             this._keyboardHeight > 0 && this.scroll({ x: 99999, y: this._keyboardHeight });
           }
           else {
@@ -330,6 +328,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
   }
 
   _onScroll = e => {
+    this._contentOffset = { x, y };
     const {
       contentOffset: { x, y },
       refreshStatus,
@@ -516,8 +515,6 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
   };
 
   _onTouchBegin = () => {
-    if (TextInputState.currentlyFocusedField())
-      TextInputState.blurTextInput(TextInputState.currentlyFocusedField());
     this.props.tapToHideKeyboard && Keyboard.dismiss();
     this.props.onTouchBegin && this.props.onTouchBegin();
   };
@@ -527,6 +524,22 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
     this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd();
   };
 
+  _onScrollBeginDrag = () => {
+    if (this.props.dragToHideKeyboard) Keyboard.dismiss();
+    this.props.onScrollBeginDrag && this.props.onScrollBeginDrag();
+  };
+
+  beginRefresh() {
+    if (!this.props.loadingFooter || this.props.loadingFooter.height <= 0)
+      return Promise.reject(
+        "SpringScrollView: call beginRefresh without loadingFooter or loadingFooter height"
+      );
+    return this.scrollTo({
+      x: 10000,
+      y: -this.props.loadingFooter.height - 1,
+    });
+  }
+
   static defaultProps = {
     bounces: true,
     scrollEnabled: true,
@@ -535,6 +548,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
     textInputRefs: [],
     inputToolBarHeight: 44,
     tapToHideKeyboard: true,
+    dragToHideKeyboard: true,
     initOffset: { x: 0, y: 0 },
     keyboardShouldPersistTaps: "always",
     showsVerticalScrollIndicator: true,
