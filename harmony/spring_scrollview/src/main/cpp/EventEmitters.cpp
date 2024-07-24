@@ -99,5 +99,13 @@ void RNCSpringScrollViewEventEmitter::onContentSizeChange(OnContentSizeChange ev
         return payload;
     });
 }
+
+void RNCSpringScrollViewEventEmitter::onScrollBeginDrag() const {
+    dispatchEvent("scrollBeginDrag", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
 } // namespace react
 } // namespace facebook

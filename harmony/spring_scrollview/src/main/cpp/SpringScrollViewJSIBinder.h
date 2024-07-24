@@ -55,6 +55,7 @@ class SpringScrollViewJSIBinder : public ViewComponentJSIBinder {
         events.setProperty(rt, "topMomentumScrollBegin", createDirectEvent(rt, "onMomentumScrollBegin"));
         events.setProperty(rt, "topMomentumScrollEnd", createDirectEvent(rt, "onMomentumScrollEnd"));
         events.setProperty(rt, "topScroll", createDirectEvent(rt, "onScroll"));
+        events.setProperty(rt, "topScrollBeginDrag", createDirectEvent(rt, "onScrollBeginDrag"));
         return events;
     }
 };

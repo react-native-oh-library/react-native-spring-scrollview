@@ -62,6 +62,7 @@ public:
     virtual void callArkTSAnimationCancel(){};
     virtual facebook::react::Size getLayoutSize(){};
     virtual void setSwiperStatus(bool swiperStatus){};
+    virtual void onScrollBeginDrag(){};
 };
 
 class SpringScrollViewNode : public ArkUINode, public EventBus::EventHandler<SpringScrollViewEvent> {
@@ -143,6 +144,8 @@ private:
     bool recordKeyBoardShow = false;
     std::chrono::high_resolution_clock::time_point keyboardHideLastTime;
     const int DISMINATE_KEYBOARD_SHOW_HIDE = 99999;
+    const int BEGIN_REFRESH = 10000;
+    bool scrollBeginDrag = false;
     bool cancelAllAnimations();
     void onMove(ArkUI_GestureEvent *evt);
     void onDown(ArkUI_GestureEvent *evt);
@@ -181,5 +184,7 @@ private:
     void beginInnerAnimation(float initialVelocity);
     void beginReboundAnimation();
     void beginHorizontalReboundAnimation();
+    void beginRefresh();
+    void setRecordEventModel();
 };
 } // namespace rnoh

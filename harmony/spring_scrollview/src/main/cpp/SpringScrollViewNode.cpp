@@ -155,6 +155,10 @@ void SpringScrollViewNode::onMove(ArkUI_GestureEvent *evt) {
     drag(lastPoint.x - x, lastPoint.y - y);
     lastPoint.x = x;
     lastPoint.y = y;
+    if (this->m_scrollNodeDelegate && !this->scrollBeginDrag) {
+        this->scrollBeginDrag = true;
+        this->m_scrollNodeDelegate->onScrollBeginDrag();
+    }
 }
 
 void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
@@ -199,6 +203,7 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
 }
 
 void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
+    this->scrollBeginDrag = false;
     if(!isMove) return;
     this->onMove(evt);
     dragging = false;
@@ -547,7 +552,7 @@ float SpringScrollViewNode::getXDampingCoefficient() {
 }
 
 void SpringScrollViewNode ::setContentOffset(float x, float y) {
-    if(this->isDestory) return;
+    if(this->isDestory || !m_stackArkUINodeHandle || !m_scrollNodeDelegate) return;
     this->contentOffset.x = x;
     this->contentOffset.y = y;
     this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
@@ -653,6 +658,12 @@ void SpringScrollViewNode ::endRefresh() {
 }
 
    void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
+        this->setRecordEventModel();
+        if(x == BEGIN_REFRESH){
+          m_scrollNodeDelegate->callArkTSScrollYStart(0, y, 500);
+          this->beginRefresh();
+          return;
+        }
         if( x == DISMINATE_KEYBOARD_SHOW_HIDE && this->recordKeyBoardShow) return;
         if(y == DISMINATE_KEYBOARD_SHOW_HIDE){
              this->recordKeyBoardShow = false;
@@ -910,5 +921,55 @@ void SpringScrollViewNode::setChildWidth(float width) {
 }
 
 void SpringScrollViewNode::setContentHeight(float height) { this->contentHeight = height; }
+
+void SpringScrollViewNode::beginRefresh() {
+    this->scrollBeginDrag = false;
+    dragging = false;
+    float vy = 0.020;
+    draggingDirection = "";
+    if (!momentumScrolling) {
+        momentumScrolling = true;
+        this->m_scrollNodeDelegate->onMomentumScrollBegin();
+    }
+    refreshStatus = "refreshing";
+    contentInsets.top = refreshHeaderHeight;
+    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
+    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
+    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
+    this->recordEventModel->setRefreshStatus(refreshStatus);
+    this->recordEventModel->setLoadingStatus(loadingStatus);
+    this->recordEventModel->setEventBounces(bounces);
+    this->recordEventModel->setEventContentOffset(contentOffset);
+    this->recordEventModel->setEventSize(size);
+    this->recordEventModel->setEventContentSize(contentSize);
+    this->recordEventModel->setEventContentInsets(contentInsets);
+    this->recordEventModel->setEventBeginPoint(beginPoint);
+    this->recordEventModel->setEventLastPoint(lastPoint);
+    this->recordEventModel->setEventMomentumScrolling(momentumScrolling);
+    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
+    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    this->beginOuterAnimation(vy);
+}
+
+
+void SpringScrollViewNode::setRecordEventModel() {
+    auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
+    this->contentOffset = recordEvent->getEventContentOffset();
+    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
+    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
+    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
+    this->recordEventModel->setRefreshStatus(refreshStatus);
+    this->recordEventModel->setLoadingStatus(loadingStatus);
+    this->recordEventModel->setEventBounces(bounces);
+    this->recordEventModel->setEventContentOffset(contentOffset);
+    this->recordEventModel->setEventSize(size);
+    this->recordEventModel->setEventContentSize(contentSize);
+    this->recordEventModel->setEventContentInsets(contentInsets);
+    this->recordEventModel->setEventBeginPoint(beginPoint);
+    this->recordEventModel->setEventLastPoint(lastPoint);
+    this->recordEventModel->setEventMomentumScrolling(momentumScrolling);
+    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
+    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+}
 
 } // namespace rnoh

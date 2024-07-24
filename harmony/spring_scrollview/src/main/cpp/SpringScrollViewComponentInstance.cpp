@@ -280,15 +280,14 @@ void SpringScrollViewComponentInstance::handleCommand(std::string const &command
         this->getLocalRootArkUINode().endLoading();
         this->firstLoad = false;
     } else if (commandName == "10002") {
+        if (args[0] == nullptr) {
+            this->getLocalRootArkUINode().scrollTo(0, args[1].asDouble(), args[2].asBool());
+            return;
+        }
         this->getLocalRootArkUINode().scrollTo(args[0].asDouble(), args[1].asDouble(), args[2].asBool());
     }
 }
 
-void SpringScrollViewComponentInstance::setLayout(facebook::react::LayoutMetrics layoutMetrics) {
-    CppComponentInstance::setLayout(layoutMetrics);
-    DLOG(INFO) << "SpringScrollViewComponentInstance setLayout w:" << layoutMetrics.frame.size.width
-               << " h:" << layoutMetrics.frame.size.height;
-}
 
 facebook::react::Size SpringScrollViewComponentInstance::getLayoutSize() { return this->m_layoutMetrics.frame.size; }
 
@@ -315,4 +314,10 @@ void SpringScrollViewComponentInstance::finalizeUpdates() {
     DLOG(INFO) << "SpringScrollViewComponentInstance finalizeUpdates";
     this->getLocalRootArkUINode().init();
 }
+
+void SpringScrollViewComponentInstance::onScrollBeginDrag() {
+    DLOG(INFO) << "onScrollBeginDrag";
+    m_eventEmitter->onScrollBeginDrag();
+};
+
 } // namespace rnoh

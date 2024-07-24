@@ -103,6 +103,9 @@ declare module "react-native-spring-scrollview" {
     textInputRefs?: any[];
     inputToolBarHeight?: number;
     tapToHideKeyboard?: boolean;
+    pagingEnabled?: boolean;
+    pageSize?: Size;
+    dragToHideKeyboard?: boolean;
     onTouchBegin?: () => any;
     onTouchEnd?: () => any;
     onTouchFinish?: () => any;
@@ -113,6 +116,7 @@ declare module "react-native-spring-scrollview" {
     onNativeContentOffsetExtract?: NativeContentOffset;
     onSizeChange?: (size:Size) => any;
     onContentSizeChange?: (size: Size) => any;
+    onScrollBeginDrag?: () => any;
   }
   export class SpringScrollView extends React.PureComponent<SpringScrollViewPropType> {
     scrollTo(offset: Offset, animated?: boolean): Promise<void>;
@@ -121,5 +125,6 @@ declare module "react-native-spring-scrollview" {
     scrollToEnd(animated?: boolean): Promise<void>;
     endRefresh(): void;
     endLoading(): void;
+    beginRefresh(): Promise<any>;
   }
 }

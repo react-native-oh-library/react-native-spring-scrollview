@@ -21,6 +21,11 @@ export interface Offset {
   y: number
 }
 
+export interface Size {
+  width: number,
+  height: number
+}
+
 export interface NativeContentOffset {
   x?: Animated.Value,
   y?: Animated.Value
@@ -56,6 +61,9 @@ export interface SpringScrollViewPropType extends ViewProps {
   textInputRefs?: any[],
   inputToolBarHeight?: number,
   tapToHideKeyboard?: boolean,
+  pagingEnabled?: boolean,
+  pageSize?: Size,
+  dragToHideKeyboard?: boolean,
   onTouchBegin?: () => any,
   onTouchEnd?: () => any,
   onTouchFinish?: () => any,
@@ -66,5 +74,6 @@ export interface SpringScrollViewPropType extends ViewProps {
   keyboardShouldPersistTaps?: "always"|"never"|"handled",
   onNativeContentOffsetExtract?: NativeContentOffset,
   onSizeChange?: ({ width: number, height: number }) => any,
-  onContentSizeChange?: ({ width: number, height: number }) => any
+  onContentSizeChange?: ({ width: number, height: number }) => any,
+  onScrollBeginDrag?: () => any
 }
