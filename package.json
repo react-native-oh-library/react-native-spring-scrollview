@@ -10,5 +10,9 @@
     "react-native",
     "react-native-scrollview"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+     "access": "public"
+  },
   "license": "MIT"
 }
