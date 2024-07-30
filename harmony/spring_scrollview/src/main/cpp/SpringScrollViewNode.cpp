@@ -165,8 +165,11 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
     auto recordEvent =
             std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
     this->contentOffset = recordEvent->getEventContentOffset();
+    this->recordSwipeY = recordEvent->getEventRecordSwipeY();
     refreshStatus = "waiting";
-    loadingStatus = "waiting";
+    if (recordEvent->getLoadingStatus() != "allLoaded") {
+        loadingStatus = "waiting";
+    }
     float x = OH_ArkUI_PanGesture_GetOffsetX(evt);
     float y = OH_ArkUI_PanGesture_GetOffsetY(evt);
     beginPoint.x = lastPoint.x = x;
@@ -196,6 +199,7 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
         this->recordEventModel->setEventContentInsets(contentInsets);
         this->recordEventModel->setEventBeginPoint(beginPoint);
         this->recordEventModel->setEventLastPoint(lastPoint);
+        this->recordEventModel->setEventRecordSwipeY(this->recordSwipeY);
         auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
         EventBus::EventBus::getInstance()->setEvent(baseEvent);
     }
@@ -562,6 +566,7 @@ void SpringScrollViewNode ::setContentOffset(float x, float y) {
     this->recordEventModel->setLoadingStatus(loadingStatus);
     this->recordEventModel->setEventBounces(bounces);
     this->recordEventModel->setEventContentOffset(contentOffset);
+    this->recordEventModel->setEventRecordSwipeY(contentOffset.y);
     auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
     EventBus::EventBus::getInstance()->setEvent(baseEvent);
     std::array<ArkUI_NumberValue, 3> translateValue = {
@@ -583,6 +588,21 @@ void SpringScrollViewNode ::setAllLoaded(bool allLoaded) {
     if (allLoaded) {
         contentInsets.bottom = 0;
     }
+    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
+    this->recordEventModel->setEventMomentumScrolling(false);
+    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
+    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
+    this->recordEventModel->setRefreshStatus(refreshStatus);
+    this->recordEventModel->setLoadingStatus(loadingStatus);
+    this->recordEventModel->setEventBounces(bounces);
+    this->recordEventModel->setEventContentOffset(contentOffset);
+    this->recordEventModel->setEventSize(size);
+    this->recordEventModel->setEventContentSize(contentSize);
+    this->recordEventModel->setEventContentInsets(contentInsets);
+    this->recordEventModel->setEventBeginPoint(beginPoint);
+    this->recordEventModel->setEventLastPoint(lastPoint);
+    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
+    EventBus::EventBus::getInstance()->setEvent(baseEvent);
 }
 
 void SpringScrollViewNode ::setDecelerationRate(float rate) { decelerationRate = rate; }
@@ -623,6 +643,7 @@ void SpringScrollViewNode ::endLoading() {
     this->recordEventModel->setEventContentInsets(contentInsets);
     this->recordEventModel->setEventBeginPoint(beginPoint);
     this->recordEventModel->setEventLastPoint(lastPoint);
+    this->recordEventModel->setEventRecordSwipeY(contentOffset.y);
     auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
     EventBus::EventBus::getInstance()->setEvent(baseEvent);
     this->m_scrollNodeDelegate->callArkTSAnimationCancel();
@@ -660,9 +681,10 @@ void SpringScrollViewNode ::endRefresh() {
    void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
         this->setRecordEventModel();
         if(x == BEGIN_REFRESH){
-          m_scrollNodeDelegate->callArkTSScrollYStart(0, y, 500);
-          this->beginRefresh();
-          return;
+            if (!this->bounces) return;
+            m_scrollNodeDelegate->callArkTSScrollYStart(0, y, 500);
+            this->beginRefresh();
+            return;
         }
         if( x == DISMINATE_KEYBOARD_SHOW_HIDE && this->recordKeyBoardShow) return;
         if(y == DISMINATE_KEYBOARD_SHOW_HIDE){
@@ -702,6 +724,7 @@ void SpringScrollViewNode::onEvent(std::shared_ptr<SpringScrollViewEvent> &event
     this->contentInsets = recordEvent->getEventContentInsets();
     this->size = recordEvent->getEventSize();
     this->momentumScrolling = recordEvent->getEventMomentumScrolling();
+    this->recordSwipeY = recordEvent->getEventRecordSwipeY();
     DLOG(INFO) << "SpringScrollViewNode onEvent " << event->getMessageType() << " getEventType "
                << event->getEventType();
 
