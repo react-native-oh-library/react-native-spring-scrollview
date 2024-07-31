@@ -101,6 +101,12 @@ public:
 
     bool getEventMomentumScrolling() { return this->eventMomentumScrolling; }
 
+    void setEventRecordSwipeY(float eventRecordSwipeY) {
+        this->eventRecordSwipeY = eventRecordSwipeY;
+    }
+
+    float getEventRecordSwipeY() { return this->eventRecordSwipeY; }
+
 protected:
     double animationValue;
     std::string eventType;
@@ -117,5 +123,6 @@ protected:
     Types::Point eventBeginPoint;
     Types::EdgeInsets eventContentInsets;
     bool eventMomentumScrolling;
+    float eventRecordSwipeY;
 };
 #endif // HARMONY_EXAMPLEEVENT_H
