@@ -32,7 +32,7 @@
 #include "SpringScrollViewComponentInstance.h"
 #include "SpringScrollViewEmitRequestHandler.h"
 #include "SpringScrollViewTurboModule.h"
-#include "SpringScrollViewArkTSMessageHandler.h"
+#include "SpringScrollViewArkTsMessageHandler.h"
 
 namespace rnoh {
 class SpringScrollViewPackageComponentInstanceFactoryDelegate : public ComponentInstanceFactoryDelegate {
