@@ -28,8 +28,10 @@ import type { HeaderStatus } from "./RefreshHeader";
 import { idx } from "./idx";
 import type { Offset, SpringScrollViewPropType } from "./Types";
 import { styles } from "./styles";
+import type { NativeProps as SpringScrollViewViewProps } from './SpringScrollViewNativeComponent';
+import SpringScrollViewNative from './SpringScrollViewNativeComponent';
 
-export class SpringScrollView extends React.PureComponent<SpringScrollViewPropType> {
+export class SpringScrollView extends React.PureComponent<SpringScrollViewViewProps> {
   _offsetY: Animated.Value;
   _offsetX: Animated.Value;
   _offsetYValue: number = 0;
@@ -106,7 +108,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
         {...this.props}
         ref={ref => (this._scrollView = ref)}
         style={(Platform.OS === "android" || Platform.OS === "harmony") ? wStyle : { flex: 1 }}
-        onScroll={this._event}
+        onScroll={this._onScroll}
         refreshHeaderHeight={onRefresh ? Refresh.height : 0}
         loadingFooterHeight={onLoading ? Loading.height : 0}
         onLayout={this._onWrapperLayoutChange}
@@ -557,10 +559,6 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
     alwaysBounceVertical: true
   };
 }
-
-const SpringScrollViewNative = Animated.createAnimatedComponent(
-  requireNativeComponent("SpringScrollView", SpringScrollView)
-);
 
 const SpringScrollContentViewNative =
   Platform.OS === "ios" ? requireNativeComponent("SpringScrollContentView") : View;
