@@ -44,6 +44,9 @@ public:
             propsObjBuilder.addProperty("allLoaded", props->allLoaded);
             propsObjBuilder.addProperty("inverted", props->inverted);
             propsObjBuilder.addProperty("directionalLockEnabled", props->directionalLockEnabled);
+            propsObjBuilder.addProperty("pageSizeW", props->pageSize.width);
+            propsObjBuilder.addProperty("pageSizeH", props->pageSize.height);
+            propsObjBuilder.addProperty("pagingEnabled", props->pagingEnabled);
             return propsObjBuilder.build();
         }
         return napiViewProps;

@@ -52,7 +52,8 @@ private:
     facebook::react::Float y{0.0};
     bool firstLoad = true;
     bool swiperStatus = false;
-
+    facebook::react::Size m_containerSize;
+    facebook::react::Size m_contentSize;
 public:
     SpringScrollViewComponentInstance(Context context);
     void onChildInserted(ComponentInstance::Shared const &childComponentInstance, std::size_t index) override;
@@ -61,30 +62,25 @@ public:
     void onPropsChanged(SharedConcreteProps const &props) override;
     void onRefresh() override;
     void onLoading() override;
-    void onTouchBegin() override;
-    void onTouchEnd() override;
-    void onMomentumScrollBegin() override;
-    void onMomentumScrollEnd() override;
     void onScroll(const facebook::react::RNCSpringScrollViewEventEmitter::OnScroll &onScroll) override;
-    void callArkTSInnerAnimationStart(float from, float to, long duration) override;
-    void callArkTSOuterAnimationStart(float from, float to, int duration) override;
-    void callArkTSInnerHorizontalAnimationStart(float from, float to, long duration) override;
-    void callArkTSOuterHorizontalAnimationStart(float from, float to, long duration) override;
-    void callArkTSReboundAnimationStart(float from, float to, long duration) override;
-    void callArkTSHorizontalReboundAnimationStart(float from, float to, long duration) override;
-    void callArkTSEndRefreshStart(float from, float to, long duration) override;
-    void callArkTSEndLoadingStart(float from, float to, long duration) override;
-    void callArkTSScrollXStart(float from, float to, long duration) override;
-    void callArkTSScrollYStart(float from, float to, long duration) override;
     void callArkTSAnimationCancel() override;
     void handleCommand(std::string const &commandName, folly::dynamic const &args) override;
     facebook::react::Size getLayoutSize() override;
     void onStateChanged(SharedConcreteState const &state) override;
-    bool isHandlingTouches() const override;
     void setSwiperStatus(bool swiperStatus) override;
     void finalizeUpdates() override;
-    void onScrollBeginDrag() override;
-
+    void onCustomScrollBeginDrag() override;
+    void onCustomTouchBegin() override;
+    void onCustomTouchEnd() override;
+    void onCustomScrollEndDrag() override;
+    void onCustomMomentumScrollBegin() override;
+    void onCustomMomentumScrollEnd() override;
+    void callArkTSInnerStart(float f, float v0, float d, float lower, float upper, bool pagingEnabled,
+                                     float pageSize,bool isVertical) override;
+    void callArkTSOuterStart(float f, float v0, float d,bool isVertical) override;
+    void callArkTSReboundStart(float f, float t, long d,bool isVertical) override;
+    facebook::react::Point getCurrentOffset() const override;
+    bool isHandlingTouches() const override;
 };
 } // namespace rnoh
 #endif // HARMONY_SpringScrollViewCOMPONENTINSTANCE_H

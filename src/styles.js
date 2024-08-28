@@ -13,6 +13,10 @@ export const styles = StyleSheet.create({
   wrapperStyle: {
     flexGrow: 1,
     flexShrink: 1,
-    overflow: "scroll"
+    overflow: 'scroll',
+  },
+
+  contentStyle: {
+    flexGrow: 1,
   }
 });

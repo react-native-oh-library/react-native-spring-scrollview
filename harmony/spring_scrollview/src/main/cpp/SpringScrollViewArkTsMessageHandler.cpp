@@ -41,6 +41,7 @@ void SpringScrollViewArkTSMessageHandler::handleArkTSMessage(const Context &ctx)
         auto event = std::make_shared<SpringScrollViewEvent>(5);
         event->setAnimationValue(ctx.messagePayload["value"].asDouble());
         event->setEventType(ctx.messagePayload["type"].asString());
+        event->setEventDirections(ctx.messagePayload["directions"].asBool());
         event->setMessageType("onUpdate");
         auto baseEvent = std::static_pointer_cast<EventBus::Event>(event);
         EventBus::EventBus::getInstance()->fire(baseEvent);
@@ -49,6 +50,8 @@ void SpringScrollViewArkTSMessageHandler::handleArkTSMessage(const Context &ctx)
     if (ctx.messageName == "onEnd") {
         auto event = std::make_shared<SpringScrollViewEvent>(5);
         event->setEventType(ctx.messagePayload["type"].asString());
+        event->setEventDirections(ctx.messagePayload["directions"].asBool());
+        event->setAnimationValue(ctx.messagePayload["value"].asDouble());
         event->setMessageType("onEnd");
         auto baseEvent = std::static_pointer_cast<EventBus::Event>(event);
         EventBus::EventBus::getInstance()->fire(baseEvent);

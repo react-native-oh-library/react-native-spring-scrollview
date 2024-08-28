@@ -27,155 +27,131 @@ import { DecelerateAnimation } from './DecelerateAnimation';
 import { AnimationCallBack } from './AnimationCallBack';
 
 export class SpringScrollViewModule extends TurboModule {
-  private mHorizontalAnimation: DecelerateAnimation = null;
-  private mVerticalAnimation: DecelerateAnimation = null;
+  private inner: DecelerateAnimation = null;
+  private outer: DecelerateAnimation = null;
+  private rebound: DecelerateAnimation = null;
+  private initialVelocity: number;
+  private dampingCoefficient: number;
+  private from: number;
+  private innerStopVelocity: number;
 
-  startInnerAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "InnerAnimation", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "InnerAnimation" });
+
+  startInner(f: number, v0: number, d: number, lower: number, upper: number, pagingEnabled: number, pageSize: number,
+             isVertical: boolean) {
+    this.from = f;
+    this.initialVelocity = v0;
+    this.dampingCoefficient = d;
+    let displacement = 0;
+    let v = this.initialVelocity;
+    let mIsVertical = isVertical;
+    let duration = 0;
+    while ((typeof v ==="number") && Math.abs(v) > 0.10) {
+      if(v == Infinity ) break;
+
+      v *= this.dampingCoefficient;
+      displacement = displacement + v;
+      duration++;
+      if (this.from + displacement >= upper) {
+        displacement = upper - this.from;
+        break;
+      } else if (this.from + displacement <= lower) {
+        displacement = lower - this.from;
+        break;
       }
     }
-    this.mVerticalAnimation.start(callBack)
+    this.innerStopVelocity = v;
+    if (pagingEnabled) {
+      let end = Math.round((f + displacement) / pageSize) * pageSize;
+      if (end > upper) {
+        end = upper;
+      }
+      if (end < lower) {
+        end = lower;
+      }
+      this.startRebound(f, end, 500,mIsVertical);
+    } else {
+      this.inner = new DecelerateAnimation(0, displacement, duration);
+      let that = this;
+      let callBack: AnimationCallBack = {
+        onUpdate(value: number, currentPlayTime: number) {
+          let v = that.initialVelocity;
+          let displacement = 0;
+          let currentTime = currentPlayTime;
+          do {
+            displacement = displacement + v;
+            v *= that.dampingCoefficient;
+            currentTime--;
+          } while ((typeof currentTime ==="number") &&currentTime > 0);
+          that.ctx.rnInstance.postMessageToCpp("onUpdate",
+            { type: "InnerAnimation", value: that.from + displacement, directions: mIsVertical });
+        },
+        onEnd() {
+          that.ctx.rnInstance.postMessageToCpp("onEnd",
+            { type: "InnerAnimation", value: that.innerStopVelocity, directions: mIsVertical });
+        }
+      }
+      if (duration > 0) {
+        this.inner.start(callBack);
+      } else {
+        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "InnerAnimation", value: v, directions: mIsVertical });
+      }
+    }
   }
 
-  startOuterAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
+  startOuter(f: number, v0: number, d: number, isVertical: boolean) {
+    this.from = f;
+    this.initialVelocity = v0;
+    this.dampingCoefficient = d;
+    let displacement = 0;
+    let v = this.initialVelocity;
+    let duration = 0;
+    let mIsVertical = isVertical;
+    while ((typeof v ==="number") && Math.abs(v) > 0.10) {
+      if(v == Infinity ) break;
+      v *= this.dampingCoefficient;
+      displacement = displacement + v;
+      duration++;
+    }
+    this.outer = new DecelerateAnimation(this.from, this.from + displacement, duration);
     let that = this;
     let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "OuterAnimation", value: value });
+      onUpdate(value: number, currentPlayTime: number) {
+        that.ctx.rnInstance.postMessageToCpp("onUpdate",
+          { type: "OuterAnimation", value: value, directions: mIsVertical });
       },
       onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "OuterAnimation" });
+        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "OuterAnimation", value:-10000, directions: mIsVertical });
       }
     }
-    this.mVerticalAnimation.start(callBack)
+    this.outer.start(callBack);
   }
 
-  startOuterHorizontalAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "OuterHorizontalAnimation", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "OuterHorizontalAnimation" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
 
-  startInnerHorizontalAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
+  startRebound(f: number, t: number, d: number, isVertical: boolean) {
+    this.rebound = new DecelerateAnimation(f, t, d);
+    let mIsVertical = isVertical;
     let that = this;
     let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "InnerHorizontalAnimation", value: value });
+      onUpdate(value: number, currentPlayTime: number) {
+        that.ctx.rnInstance.postMessageToCpp("onUpdate",
+          { type: "ReboundAnimation", value: value, directions: mIsVertical });
       },
       onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "InnerHorizontalAnimation" });
+        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "ReboundAnimation",value:-10000,  directions: mIsVertical });
       }
     }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startReboundAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "ReboundAnimation", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "ReboundAnimation" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startHorizontalReboundAnimation(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "HorizontalReboundAnimation", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "HorizontalReboundAnimation" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startEndRefresh(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "EndRefresh", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "EndRefresh" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startEndLoading(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "EndLoading", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "EndLoading" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startScrollX(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "ScrollX", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "ScrollX" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
-  }
-
-  startScrollY(from: number, to: number, duration: number) {
-    this.mVerticalAnimation = new DecelerateAnimation(from, to, duration);
-    let that = this;
-    let callBack: AnimationCallBack = {
-      onUpdate(value: number) {
-        that.ctx.rnInstance.postMessageToCpp("onUpdate", { type: "ScrollY", value: value });
-      },
-      onEnd() {
-        that.ctx.rnInstance.postMessageToCpp("onEnd", { type: "ScrollY" });
-      }
-    }
-    this.mVerticalAnimation.start(callBack)
+    this.rebound.start(callBack)
   }
 
   cancelAnimation() {
-    if (this.mHorizontalAnimation) {
-      this.mHorizontalAnimation.cancel();
+    if (this.inner) {
+      this.inner.cancel();
     }
-    if (this.mVerticalAnimation) {
-      this.mVerticalAnimation.cancel();
+    if (this.outer) {
+      this.outer.cancel();
+    }
+    if (this.rebound) {
+      this.rebound.cancel();
     }
   }
 }

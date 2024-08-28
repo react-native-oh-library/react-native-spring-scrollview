@@ -28,8 +28,13 @@ import { AnimationCallBack } from './AnimationCallBack'
 export class DecelerateAnimation {
   private mAnimator: AnimatorResult | undefined = undefined
   private animating: boolean = false;
-
+  private mDuration:number = 0;
+  private mFrom:number = 0;
+  private mTo:number = 0;
   constructor(from: number, to: number, duration: number) {
+    this.mDuration = duration;
+    this.mFrom = from;
+    this.mTo = to;
     this.mAnimator = animator.create({
       duration: duration,
       easing: "ease",
@@ -47,19 +52,20 @@ export class DecelerateAnimation {
       return
     }
     this.animating = true;
-    this.mAnimator.onfinish = () => {
+    this.mAnimator.onFinish = () => {
       this.animating = false;
       if (callBack) {
         callBack.onEnd();
       }
     }
-    this.mAnimator.onrepeat = () => {
+    this.mAnimator.onRepeat = () => {
     }
-    this.mAnimator.oncancel = () => {
+    this.mAnimator.onCancel = () => {
     }
-    this.mAnimator.onframe = (value: number) => {
+
+    this.mAnimator.onFrame = (value: number) => {
       if (callBack) {
-        callBack.onUpdate(value);
+        callBack.onUpdate(value, value);
       }
     }
     this.mAnimator.play();

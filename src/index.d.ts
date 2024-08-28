@@ -91,6 +91,9 @@ declare module "react-native-spring-scrollview" {
     contentStyle?: ViewStyle;
     bounces?: boolean;
     scrollEnabled?: boolean;
+    pagingEnabled?: boolean;
+    pageSize?: Size;
+    decelerationRate?: number;
     directionalLockEnabled?: boolean;
     initialContentOffset?: Offset;
     showsVerticalScrollIndicator?: boolean;
@@ -103,12 +106,9 @@ declare module "react-native-spring-scrollview" {
     textInputRefs?: any[];
     inputToolBarHeight?: number;
     tapToHideKeyboard?: boolean;
-    pagingEnabled?: boolean;
-    pageSize?: Size;
     dragToHideKeyboard?: boolean;
     onTouchBegin?: () => any;
     onTouchEnd?: () => any;
-    onTouchFinish?: () => any;
     inverted?: boolean;
     onMomentumScrollBegin?: () => any;
     onMomentumScrollEnd?: () => any;
@@ -124,7 +124,7 @@ declare module "react-native-spring-scrollview" {
     scrollToBegin(animated?: boolean): Promise<void>;
     scrollToEnd(animated?: boolean): Promise<void>;
     endRefresh(): void;
-    endLoading(): void;
     beginRefresh(): Promise<any>;
+    endLoading(rebound: boolean): void;
   }
 }

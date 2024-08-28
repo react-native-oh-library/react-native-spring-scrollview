@@ -41,28 +41,23 @@ public:
     virtual ~SpringScrollViewNodeDelegate() = default;
     virtual void onRefresh(){};
     virtual void onLoading(){};
-    virtual void onTouchBegin(){};
-    virtual void onTouchEnd(){};
-    virtual void onMomentumScrollBegin(){};
-    virtual void onMomentumScrollEnd(){};
     virtual void onScroll(const facebook::react::RNCSpringScrollViewEventEmitter::OnScroll &onScroll){};
     virtual void onSizeChange(const float &displayedScrollHeight){};
     virtual void onContentSizeChange(const float &displayedScrollHeight){};
     virtual bool isComponentTop(){};
-    virtual void callArkTSInnerAnimationStart(float from, float to, long duration){};
-    virtual void callArkTSOuterAnimationStart(float from, float to, int duration){};
-    virtual void callArkTSInnerHorizontalAnimationStart(float from, float to, long duration){};
-    virtual void callArkTSOuterHorizontalAnimationStart(float from, float to, long duration){};
-    virtual void callArkTSReboundAnimationStart(float from, float to, long duration){};
-    virtual void callArkTSHorizontalReboundAnimationStart(float from, float to, long duration){};
-    virtual void callArkTSEndRefreshStart(float from, float to, long duration){};
-    virtual void callArkTSEndLoadingStart(float from, float to, long duration){};
-    virtual void callArkTSScrollXStart(float from, float to, long duration){};
-    virtual void callArkTSScrollYStart(float from, float to, long duration){};
     virtual void callArkTSAnimationCancel(){};
     virtual facebook::react::Size getLayoutSize(){};
     virtual void setSwiperStatus(bool swiperStatus){};
-    virtual void onScrollBeginDrag(){};
+    virtual void onCustomScrollBeginDrag(){};
+    virtual void onCustomScrollEndDrag(){};
+    virtual void onCustomTouchBegin(){};
+    virtual void onCustomTouchEnd(){};
+    virtual void onCustomMomentumScrollBegin(){};
+    virtual void onCustomMomentumScrollEnd(){};
+
+    virtual void callArkTSInnerStart(float f,  float v0,  float d, float lower, float upper, bool pagingEnabled, float pageSize,bool isVertical){};
+    virtual void callArkTSOuterStart(float f, float v0, float d,bool isVertical){};
+    virtual void callArkTSReboundStart(float f, float t, long d,bool isVertical){};
 };
 
 class SpringScrollViewNode : public ArkUINode, public EventBus::EventHandler<SpringScrollViewEvent> {
@@ -73,7 +68,7 @@ public:
     SpringScrollViewNode();
     ~SpringScrollViewNode() override;
 
-    void insertChild(ArkUINode &child, std::size_t index);
+   void insertChild(ArkUINode &child, std::size_t index);
     void removeChild(ArkUINode &child);
     void setSpringScrollViewNodeDelegate(SpringScrollViewNodeDelegate *springScrollViewNodeDelegate);
     void init();
@@ -88,7 +83,7 @@ public:
     void setAllLoaded(bool allLoaded);
     void setDirectionalLockEnabled(bool directionalLockEnabled);
     void setContentOffset(float x, float y);
-    void endLoading();
+    void endLoading(bool rebound);
     void endRefresh();
     void scrollTo(float x, float y, bool animated);
     void onEvent(std::shared_ptr<SpringScrollViewEvent> &event) override;
@@ -98,7 +93,9 @@ public:
     void setChildHeight(float height);
     void setChildWidth(float width);
     void setContentHeight(float height);
-
+    void setPagingEnabled(bool pagingEnabled);
+    void setPageSize(float width, float height);
+    
 private:
     Types::Offset contentOffset{0.0f, 0.0f};
     Types::Offset initialContentOffset{0.0f, 0.0f};
@@ -127,9 +124,11 @@ private:
     std::chrono::high_resolution_clock::time_point m_innerHorizontalAnimationStart;
     std::shared_ptr<SpringScrollViewEvent> recordEventModel;
     float m_initialVelocity;
+    float m_dampingCoefficient;
     ArkUI_NativeGestureAPI_1 *panGestureApi;
     ArkUI_GestureRecognizer *scrollPanGesture;
     ArkUI_NodeHandle m_stackArkUINodeHandle;
+    ArkUI_NodeHandle m_scrollArkUINodeHandle;
     float recordSwipeY = 0;
     bool isOnloading = false;
     float downY = 0;
@@ -146,6 +145,9 @@ private:
     const int DISMINATE_KEYBOARD_SHOW_HIDE = 99999;
     const int BEGIN_REFRESH = 10000;
     bool scrollBeginDrag = false;
+    bool pagingEnabled = false;
+    bool m_Directions;
+    double m_AnimationValue;
     bool cancelAllAnimations();
     void onMove(ArkUI_GestureEvent *evt);
     void onDown(ArkUI_GestureEvent *evt);
@@ -176,14 +178,8 @@ private:
     bool shouldDraggingCancel();
     bool shouldFooterWaiting();
     bool canHorizontalScroll();
-    void onHorizontalAnimationEnd(){};
-    void onVerticalAnimationEnd(){};
-    void beginInnerHorizontalAnimation(float initialVelocity);
-    void beginOuterHorizontalAnimation(float initialVelocity);
-    void beginOuterAnimation(float initialVelocity);
-    void beginInnerAnimation(float initialVelocity);
-    void beginReboundAnimation();
-    void beginHorizontalReboundAnimation();
+    void onHorizontalAnimationEnd();
+    void onVerticalAnimationEnd();
     void beginRefresh();
     void setRecordEventModel();
 };

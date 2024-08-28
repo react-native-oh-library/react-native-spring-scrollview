@@ -39,6 +39,9 @@ class SpringScrollViewJSIBinder : public ViewComponentJSIBinder {
         object.setProperty(rt, "inverted", "boolean");
         object.setProperty(rt, "directionalLockEnabled", "boolean");
         object.setProperty(rt, "allLoaded", "boolean");
+        object.setProperty(rt, "pagingEnabled", "boolean");
+        object.setProperty(rt, "pageSize", "string");
+        object.setProperty(rt, "decelerationRate", "float");
         return object;
     }
 
@@ -56,6 +59,12 @@ class SpringScrollViewJSIBinder : public ViewComponentJSIBinder {
         events.setProperty(rt, "topMomentumScrollEnd", createDirectEvent(rt, "onMomentumScrollEnd"));
         events.setProperty(rt, "topScroll", createDirectEvent(rt, "onScroll"));
         events.setProperty(rt, "topScrollBeginDrag", createDirectEvent(rt, "onScrollBeginDrag"));
+        events.setProperty(rt, "topCustomScrollBeginDrag", createDirectEvent(rt, "onCustomScrollBeginDrag"));
+        events.setProperty(rt, "topCustomTouchEnd", createDirectEvent(rt, "onCustomTouchEnd"));
+        events.setProperty(rt, "topCustomTouchBegin", createDirectEvent(rt, "onCustomTouchBegin"));
+        events.setProperty(rt, "topCustomScrollEndDrag", createDirectEvent(rt, "onCustomScrollEndDrag"));
+        events.setProperty(rt, "topCustomMomentumScrollBegin", createDirectEvent(rt, "onCustomMomentumScrollBegin"));
+        events.setProperty(rt, "topCustomMomentumScrollEnd", createDirectEvent(rt, "onCustomMomentumScrollEnd"));
         return events;
     }
 };

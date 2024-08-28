@@ -107,5 +107,52 @@ void RNCSpringScrollViewEventEmitter::onScrollBeginDrag() const {
     });
 }
 
+
+void RNCSpringScrollViewEventEmitter::onCustomScrollBeginDrag() const {
+    dispatchEvent("customScrollBeginDrag", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
+void RNCSpringScrollViewEventEmitter::onCustomScrollEndDrag() const {
+    dispatchEvent("customScrollEndDrag", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
+
+void RNCSpringScrollViewEventEmitter::onCustomTouchBegin() const {
+    dispatchEvent("customTouchBegin", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
+
+void RNCSpringScrollViewEventEmitter::onCustomTouchEnd() const {
+    dispatchEvent("customTouchEnd", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
+
+void RNCSpringScrollViewEventEmitter::onCustomMomentumScrollBegin() const {
+    dispatchEvent("customMomentumScrollBegin", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
+
+void RNCSpringScrollViewEventEmitter::onCustomMomentumScrollEnd() const {
+    dispatchEvent("customMomentumScrollEnd", [](jsi::Runtime &runtime) {
+        auto payload = jsi::Object(runtime);
+        return payload;
+    });
+}
+
 } // namespace react
 } // namespace facebook
