@@ -34,7 +34,7 @@ RNCSpringScrollViewProps::RNCSpringScrollViewProps(const PropsParserContext &con
                                                    const RNCSpringScrollViewProps &sourceProps,
                                                    const RawProps &rawProps)
     : ViewProps(context, sourceProps, rawProps),
-      initialContentOffset(convertRawProp(context, rawProps, "initialContentOffset", sourceProps.initialContentOffset,
+           initialContentOffset(convertRawProp(context, rawProps, "initialContentOffset", sourceProps.initialContentOffset,
                                           Types::Offset(0.0f, 0.0f))),
       refreshHeaderHeight(
           convertRawProp(context, rawProps, "refreshHeaderHeight", sourceProps.refreshHeaderHeight, 1.0f)),
@@ -45,7 +45,11 @@ RNCSpringScrollViewProps::RNCSpringScrollViewProps(const PropsParserContext &con
       inverted(convertRawProp(context, rawProps, "inverted", sourceProps.inverted, false)),
       allLoaded(convertRawProp(context, rawProps, "allLoaded", sourceProps.allLoaded, false)),
       directionalLockEnabled(
-          convertRawProp(context, rawProps, "directionalLockEnabled", sourceProps.directionalLockEnabled, false)) {}
+          convertRawProp(context, rawProps, "directionalLockEnabled", sourceProps.directionalLockEnabled, false)),
+      pagingEnabled(convertRawProp(context, rawProps, "pagingEnabled", sourceProps.pagingEnabled, false)),
+      pageSize(convertRawProp(context, rawProps, "pageSize", sourceProps.pageSize, Types::Size(0.0f, 0.0f))),
+      decelerationRate(
+                  convertRawProp(context, rawProps, "decelerationRate", sourceProps.decelerationRate, 1.0f)){}
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::Offset &result) {
     auto map = (butter::map<std::string, RawValue>)value;

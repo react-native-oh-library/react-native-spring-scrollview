@@ -47,8 +47,14 @@ SpringScrollViewNode::~SpringScrollViewNode() {
     this->recordEventModel->setEventContentInsets({0, 0, 0, 0});
     this->recordEventModel->setEventBeginPoint({0, 0});
     this->recordEventModel->setEventLastPoint({0, 0});
+    this->recordEventModel->setEventDirections(true);
+    this->recordEventModel->setEventIsOnloading(false);
+    this->recordEventModel->setEventRecordSwipeY(0);
+    this->recordEventModel->setEventDampingCoefficient(0);
+    this->recordEventModel->setEventMomentumScrolling(false);
     auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
     EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    
 }
 
 void SpringScrollViewNode::setSpringScrollViewNodeDelegate(SpringScrollViewNodeDelegate *springScrollViewNodeDelegate) {
@@ -157,7 +163,7 @@ void SpringScrollViewNode::onMove(ArkUI_GestureEvent *evt) {
     lastPoint.y = y;
     if (this->m_scrollNodeDelegate && !this->scrollBeginDrag) {
         this->scrollBeginDrag = true;
-        this->m_scrollNodeDelegate->onScrollBeginDrag();
+        this->m_scrollNodeDelegate->onCustomScrollBeginDrag();
     }
 }
 
@@ -166,6 +172,7 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
             std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
     this->contentOffset = recordEvent->getEventContentOffset();
     this->recordSwipeY = recordEvent->getEventRecordSwipeY();
+    this->isOnloading = recordEvent->getEventIsOnloading();
     refreshStatus = "waiting";
     if (recordEvent->getLoadingStatus() != "allLoaded") {
         loadingStatus = "waiting";
@@ -185,25 +192,9 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
     }
     if (momentumScrolling) {
         momentumScrolling = false;
-        this->m_scrollNodeDelegate->onMomentumScrollEnd();
-        this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-        this->recordEventModel->setEventMomentumScrolling(false);
-        this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-        this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-        this->recordEventModel->setRefreshStatus(refreshStatus);
-        this->recordEventModel->setLoadingStatus(loadingStatus);
-        this->recordEventModel->setEventBounces(bounces);
-        this->recordEventModel->setEventContentOffset(contentOffset);
-        this->recordEventModel->setEventSize(size);
-        this->recordEventModel->setEventContentSize(contentSize);
-        this->recordEventModel->setEventContentInsets(contentInsets);
-        this->recordEventModel->setEventBeginPoint(beginPoint);
-        this->recordEventModel->setEventLastPoint(lastPoint);
-        this->recordEventModel->setEventRecordSwipeY(this->recordSwipeY);
-        auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-        EventBus::EventBus::getInstance()->setEvent(baseEvent);
+         this->setRecordEventModel();
     }
-    this->m_scrollNodeDelegate->onTouchBegin();
+    this->m_scrollNodeDelegate->onCustomTouchBegin();
 }
 
 void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
@@ -211,13 +202,13 @@ void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
     if(!isMove) return;
     this->onMove(evt);
     dragging = false;
-    float vy = 0.020;
-    float vx = 0.020;
-    draggingDirection = "";
-    this->m_scrollNodeDelegate->onTouchEnd();
+    float vy = OH_ArkUI_PanGesture_GetVelocityY(evt)/1000;
+    float vx = OH_ArkUI_PanGesture_GetVelocityX(evt)/1000;
+    this->m_scrollNodeDelegate->onCustomTouchEnd();
+    this->m_scrollNodeDelegate->onCustomScrollEndDrag();
     if (!momentumScrolling) {
         momentumScrolling = true;
-        this->m_scrollNodeDelegate->onMomentumScrollBegin();
+        this->m_scrollNodeDelegate->onCustomMomentumScrollBegin();
     }
     if (shouldRefresh()) {
         refreshStatus = "refreshing";
@@ -230,164 +221,22 @@ void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
     if (!scrollEnabled) {
         return;
     }
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventSize(size);
-    this->recordEventModel->setEventContentSize(contentSize);
-    this->recordEventModel->setEventContentInsets(contentInsets);
-    this->recordEventModel->setEventBeginPoint(beginPoint);
-    this->recordEventModel->setEventLastPoint(lastPoint);
-    this->recordEventModel->setEventMomentumScrolling(momentumScrolling);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
-    if (overshootVertical()) {
-        this->beginOuterAnimation(vy);
-    } else {
-        this->beginInnerAnimation(vy);
-    }
+    this->m_dampingCoefficient = pagingEnabled ? 0.99f : decelerationRate;
+    this->setRecordEventModel();
+    float maxY = contentSize.height + contentInsets.bottom - size.height;
+    draggingDirection = "";
+        this->m_scrollNodeDelegate->callArkTSInnerStart(contentOffset.y, -vy, pagingEnabled ? 0.99f :
+        decelerationRate, -contentInsets.top,
+                                     maxY, pagingEnabled, getPageHeight(),true);
+
     if (contentSize.width <= size.width) {
         return;
-    }
-    if (overshootHorizontal()) {
-        this->beginOuterHorizontalAnimation(vx);
-    } else {
-        this->beginInnerHorizontalAnimation(vx);
-    }
+    }    
+    float maxX = contentSize.width - size.width + contentInsets.right;
+    this->m_scrollNodeDelegate->callArkTSInnerStart(contentOffset.x, -vx, pagingEnabled ? 0.99f : decelerationRate, -contentInsets.left,
+                                   maxX, pagingEnabled, getPageWidth(),false);
 }
 
-void SpringScrollViewNode::beginInnerHorizontalAnimation(float initialVelocity) {
-    if (abs(initialVelocity) < 0.1f) {
-        return;
-    }
-    this->m_innerHorizontalAnimationStart = std::chrono::high_resolution_clock::now();
-    float base = contentOffset.x;
-    float v = initialVelocity;
-    float dampingCoefficient = 0.997f;
-    int duration = 0;
-    float displacement = 0;
-    while (abs(v) > 0.1f) {
-        displacement += v;
-        v *= dampingCoefficient;
-        duration++;
-    }
-    this->m_scrollNodeDelegate->callArkTSInnerHorizontalAnimationStart(base, base - displacement, duration);
-}
-
-void SpringScrollViewNode::beginHorizontalReboundAnimation() {
-    if (!overshootHorizontal() || !bounces) {
-        return;
-    }
-    float endValue;
-    if (overshootLeft()) {
-        endValue = -contentInsets.left;
-    } else {
-        endValue = contentSize.width - size.width + contentInsets.right;
-    }
-    this->m_scrollNodeDelegate->callArkTSHorizontalReboundAnimationStart(contentOffset.x, endValue, 500);
-}
-
-void SpringScrollViewNode::beginOuterHorizontalAnimation(float initialVelocity) {
-    if (abs(initialVelocity) < 0.1f) {
-        beginHorizontalReboundAnimation();
-        return;
-    }
-    if (initialVelocity > 15)
-        initialVelocity = 15;
-    if (initialVelocity < -15)
-        initialVelocity = -15;
-    float base = contentOffset.x;
-    float v = initialVelocity;
-    float dampingCoefficient = 0.9f;
-    int duration = 0;
-    float displacement = 0;
-    while (abs(v) > 0.1f) {
-        displacement += v;
-        v *= dampingCoefficient;
-        duration++;
-    }
-    this->m_scrollNodeDelegate->callArkTSOuterHorizontalAnimationStart(base, base - displacement, duration);
-}
-
-void SpringScrollViewNode::beginOuterAnimation(float initialVelocity) {
-
-    if (abs(initialVelocity) < 0.1f) {
-        beginReboundAnimation();
-        return;
-    }
-    if (initialVelocity > 15) {
-        initialVelocity = 15;
-    }
-    if (initialVelocity < -15) {
-        initialVelocity = -15;
-    }
-    float base = contentOffset.y;
-    float v = initialVelocity;
-    float dampingCoefficient = 0.9f;
-    int duration = 0;
-    float displacement = 0;
-    while (abs(v) > 0.1f) {
-        displacement += v;
-        v *= dampingCoefficient;
-        duration++;
-    }
-    this->m_scrollNodeDelegate->callArkTSOuterAnimationStart(base, base - displacement, duration);
-}
-
-void SpringScrollViewNode::beginInnerAnimation(float initialVelocity) {
-    if (abs(initialVelocity) < 0.1f) {
-        if (momentumScrolling) {
-            momentumScrolling = false;
-            this->m_scrollNodeDelegate->onMomentumScrollEnd();
-            this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-            this->recordEventModel->setEventMomentumScrolling(false);
-            this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-            this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-            this->recordEventModel->setRefreshStatus(refreshStatus);
-            this->recordEventModel->setLoadingStatus(loadingStatus);
-            this->recordEventModel->setEventBounces(bounces);
-            this->recordEventModel->setEventContentOffset(contentOffset);
-            this->recordEventModel->setEventSize(size);
-            this->recordEventModel->setEventContentSize(contentSize);
-            this->recordEventModel->setEventContentInsets(contentInsets);
-            this->recordEventModel->setEventBeginPoint(beginPoint);
-            this->recordEventModel->setEventLastPoint(lastPoint);
-            auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-            EventBus::EventBus::getInstance()->setEvent(baseEvent);
-        }
-        return;
-    }
-    float base = contentOffset.y;
-    float v = initialVelocity;
-    float dampingCoefficient = 0.997f;
-    int duration = 0;
-    float displacement = 0;
-    while (abs(v) > 0.1f) {
-        displacement += v;
-        v *= dampingCoefficient;
-        duration++;
-    }
-    this->m_initialVelocity = initialVelocity;
-    this->m_innerAnimationStart = std::chrono::high_resolution_clock::now();
-    this->m_scrollNodeDelegate->callArkTSInnerAnimationStart(base, base - displacement, duration);
-}
-
-void SpringScrollViewNode::beginReboundAnimation() {
-    if (!overshootVertical() || !bounces) {
-        return;
-    }
-    float endValue;
-    if (overshootHead()) {
-        endValue = -contentInsets.top;
-    } else {
-        endValue = contentSize.height - size.height + contentInsets.bottom;
-    }
-    this->m_scrollNodeDelegate->callArkTSReboundAnimationStart(contentOffset.y, endValue, 500);
-}
 
 bool SpringScrollViewNode::cancelAllAnimations() {
     m_scrollNodeDelegate->callArkTSAnimationCancel();
@@ -413,6 +262,7 @@ void SpringScrollViewNode::drag(float x, float y) {
         if (draggingDirection == "v")
             x = 0;
     }
+    DLOG(INFO) << " SpringScrollViewNode drag isOnloading " << isOnloading << " recordSwipeY " << recordSwipeY;
     if (this->isOnloading) {
         contentOffset.y = this->recordSwipeY;
         this->isOnloading = false;
@@ -534,41 +384,18 @@ bool SpringScrollViewNode::overshootRight() {
 bool SpringScrollViewNode::overshootHorizontal() { return overshootLeft() || overshootRight(); }
 
 float SpringScrollViewNode::getYDampingCoefficient() {
-    if (!overshootVertical()) {
-        return 1;
-    }
-    float overshoot = overshootHead() ? -contentOffset.y : contentOffset.y - contentSize.height + size.height;
-    float c = 0.8f;
-    return c / (size.height * size.height) * (overshoot * overshoot) - 2 * c / size.height * overshoot + c;
+    return overshootVertical() ? 0.5f : 1.0f;
 }
 
 float SpringScrollViewNode::getXDampingCoefficient() {
-    float overshoot;
-    if (overshootLeft()) {
-        overshoot = -contentOffset.x;
-    } else if (overshootRight()) {
-        overshoot = contentOffset.x - contentSize.width + size.width;
-    } else {
-        return 1;
-    }
-    float c = 0.8f;
-    return c / (size.width * size.width) * (overshoot * overshoot) - 2 * c / size.width * overshoot + c;
+    return overshootLeft() || overshootRight() ? 0.5f : 1.0f;
 }
 
 void SpringScrollViewNode ::setContentOffset(float x, float y) {
     if(this->isDestory || !m_stackArkUINodeHandle || !m_scrollNodeDelegate) return;
     this->contentOffset.x = x;
     this->contentOffset.y = y;
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventRecordSwipeY(contentOffset.y);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+      this->setRecordEventModel();  
     std::array<ArkUI_NumberValue, 3> translateValue = {
             ArkUI_NumberValue{.f32 = -this->contentOffset.x}, {.f32 = -this->contentOffset.y}, {.f32 = 0}};
         ArkUI_AttributeItem translateItem = {translateValue.data(), translateValue.size()};
@@ -588,21 +415,8 @@ void SpringScrollViewNode ::setAllLoaded(bool allLoaded) {
     if (allLoaded) {
         contentInsets.bottom = 0;
     }
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setEventMomentumScrolling(false);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventSize(size);
-    this->recordEventModel->setEventContentSize(contentSize);
-    this->recordEventModel->setEventContentInsets(contentInsets);
-    this->recordEventModel->setEventBeginPoint(beginPoint);
-    this->recordEventModel->setEventLastPoint(lastPoint);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    momentumScrolling = false;
+    this->setRecordEventModel();
 }
 
 void SpringScrollViewNode ::setDecelerationRate(float rate) { decelerationRate = rate; }
@@ -622,33 +436,17 @@ void SpringScrollViewNode ::setInverted(bool v) { this->inverted = v; }
 
 void SpringScrollViewNode ::setDirectionalLockEnabled(bool v) { this->directionalLockEnabled = v; }
 
-void SpringScrollViewNode ::endLoading() {
+void SpringScrollViewNode ::endLoading(bool rebound) {
     this->isOnloading = true;
     if (loadingStatus != "loading") {
         return;
     }
-    loadingStatus = "rebound";
+    loadingStatus = rebound ? "rebound" : "waiting";
     this->recordSwipeY = contentOffset.y;
-    auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
-    this->contentOffset = recordEvent->getEventContentOffset();
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventSize(size);
-    this->recordEventModel->setEventContentSize(contentSize);
-    this->recordEventModel->setEventContentInsets(contentInsets);
-    this->recordEventModel->setEventBeginPoint(beginPoint);
-    this->recordEventModel->setEventLastPoint(lastPoint);
-    this->recordEventModel->setEventRecordSwipeY(contentOffset.y);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    this->setRecordEventModel();
     this->m_scrollNodeDelegate->callArkTSAnimationCancel();
+    m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.y, contentSize.height - size.height + (rebound ? 0 : contentInsets.bottom), 500,true);
     contentInsets.bottom = 0;
-    m_scrollNodeDelegate->callArkTSEndLoadingStart(contentOffset.y, contentSize.height - size.height, 500);
 }
 
 void SpringScrollViewNode ::endRefresh() {
@@ -656,34 +454,20 @@ void SpringScrollViewNode ::endRefresh() {
         return;
     }
     refreshStatus = "rebound";
-    auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
-    this->contentOffset = recordEvent->getEventContentOffset();
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventSize(size);
-    this->recordEventModel->setEventContentSize(contentSize);
-    this->recordEventModel->setEventContentInsets(contentInsets);
-    this->recordEventModel->setEventBeginPoint(beginPoint);
-    this->recordEventModel->setEventLastPoint(lastPoint);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    this->setRecordEventModel();
     contentInsets.top = 0;
-    m_scrollNodeDelegate->callArkTSEndRefreshStart(contentOffset.y, 0, 500);
+    m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.y, 0, 500,true);
     contentOffset.y = 0;
     contentOffset.x = 0;
 }
 
-   void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
+  void SpringScrollViewNode ::scrollTo(float x, float y, bool animated) {
+       DLOG(INFO) << "SpringScrollViewNode scrollTo x:" << x << " y " << y << " animated " << animated; 
         this->setRecordEventModel();
         if(x == BEGIN_REFRESH){
             if (!this->bounces) return;
-            m_scrollNodeDelegate->callArkTSScrollYStart(0, y, 500);
             this->beginRefresh();
+            m_scrollNodeDelegate->callArkTSReboundStart(0, y, 500,true);
             return;
         }
         if( x == DISMINATE_KEYBOARD_SHOW_HIDE && this->recordKeyBoardShow) return;
@@ -705,9 +489,9 @@ void SpringScrollViewNode ::endRefresh() {
             moveToOffset(x, y);
             return;
         }
-        m_scrollNodeDelegate->callArkTSScrollYStart(contentOffset.y, y, 500);
+        m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.y, y, 500,true);
         if (x != contentOffset.x && x!=DISMINATE_KEYBOARD_SHOW_HIDE) {
-            m_scrollNodeDelegate->callArkTSScrollXStart(contentOffset.x, x, 500);
+            m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.x, x, 500,false);
         }
     }
 
@@ -725,205 +509,83 @@ void SpringScrollViewNode::onEvent(std::shared_ptr<SpringScrollViewEvent> &event
     this->size = recordEvent->getEventSize();
     this->momentumScrolling = recordEvent->getEventMomentumScrolling();
     this->recordSwipeY = recordEvent->getEventRecordSwipeY();
+    this->m_dampingCoefficient = recordEvent->getEventDampingCoefficient();
+    this->m_initialVelocity = recordEvent->getEventInitialVelocity();
+    this->contentSize = recordEvent->getEventContentSize();
+    this->contentOffset = recordEvent->getEventContentOffset();
+    this->m_Directions = event->getEventDirections();
     DLOG(INFO) << "SpringScrollViewNode onEvent " << event->getMessageType() << " getEventType "
-               << event->getEventType();
-
+               << event->getEventType() << " getAnimationValue "<< event->getAnimationValue() << " x " <<  recordEvent->getEventContentOffset().x  << " y " << recordEvent->getEventContentOffset().y << " isVertical " << event->getEventDirections() ;
     if (event->getMessageType() == "onUpdate" && event->getEventType() == "OuterAnimation") {
-        double value = event->getAnimationValue();
-        if (!bounces) {
-            contentOffset.y = value;
-            if (overshootHead()) {
-                value = -contentInsets.top;
-                m_scrollNodeDelegate->callArkTSAnimationCancel();
-            } else if (overshootFooter()) {
-                value = contentSize.height - size.height + contentInsets.bottom;
-                m_scrollNodeDelegate->callArkTSAnimationCancel();
-            }
-        }
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        this->setContentOffset(contentOffset.x, value);
-    }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "ReboundAnimation") {
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        this->setContentOffset(contentOffset.x, event->getAnimationValue());
-    }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "InnerAnimation") {
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        setContentOffset(contentOffset.x, event->getAnimationValue());
-        if (overshootHead() || overshootFooter()) {
-            std::chrono::duration<double> duration =
-                std::chrono::high_resolution_clock::now() - this->m_innerAnimationStart;
-            long interval = duration.count();
-            float v = this->m_initialVelocity;
-            while (interval-- > 0) {
-                v *= 0.997f;
-            }
-            m_scrollNodeDelegate->callArkTSAnimationCancel();
-            beginOuterAnimation(v);
+        if (this->m_Directions) {
+               setContentOffset(recordEvent->getEventContentOffset().x, event->getAnimationValue());
+            } else {
+               setContentOffset(event->getAnimationValue(), recordEvent->getEventContentOffset().y);
         }
     }
     
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "OuterHorizontalAnimation") {
-        float value = event->getAnimationValue();
-        if (!bounces) {
-            contentOffset.x = value;
-            if (overshootLeft()) {
-                value = -contentInsets.left;
-                m_scrollNodeDelegate->callArkTSAnimationCancel();
-            } else if (overshootRight()) {
-                value = contentSize.width - size.width + contentInsets.right;
-                m_scrollNodeDelegate->callArkTSAnimationCancel();
-            }
-        }
-        contentOffset.y = recordEvent->getEventContentOffset().y;
-        setContentOffset(value, contentOffset.y);
-    }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "HorizontalReboundAnimation") {
-        contentOffset.y = recordEvent->getEventContentOffset().y;
-        setContentOffset(event->getAnimationValue(), contentOffset.y);
-    }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "InnerHorizontalAnimation") {
-        contentOffset.y = recordEvent->getEventContentOffset().y;
-        setContentOffset(event->getAnimationValue(), contentOffset.y);
-        if (overshootHorizontal()) {
-            std::chrono::duration<double> duration =
-                std::chrono::high_resolution_clock::now() - this->m_innerHorizontalAnimationStart;
-            long interval = duration.count();
-            float v = this->m_initialVelocity;
-            while (interval-- > 0) {
-                v *= 0.997f;
-            }
-            m_scrollNodeDelegate->callArkTSAnimationCancel();
-            beginOuterHorizontalAnimation(v);
+    if (event->getMessageType() == "onUpdate" && event->getEventType() == "ReboundAnimation") {
+        if (this->m_Directions) {
+               setContentOffset(recordEvent->getEventContentOffset().x, event->getAnimationValue());
+        } else {
+               setContentOffset(event->getAnimationValue(), recordEvent->getEventContentOffset().y);
         }
     }
 
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "EndRefresh") {
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        this->setContentOffset(contentOffset.x, event->getAnimationValue());
-    }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "EndLoading") {
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        this->setContentOffset(contentOffset.x, event->getAnimationValue());
+    if (event->getMessageType() == "onUpdate" && event->getEventType() == "InnerAnimation") {
+        if(this->m_Directions){
+            setContentOffset(recordEvent->getEventContentOffset().x, event->getAnimationValue());
+        }
+        else{
+            setContentOffset(event->getAnimationValue(),recordEvent->getEventContentOffset().y);
+        }
     }
 
     if (event->getMessageType() == "onEnd" && event->getEventType() == "OuterAnimation") {
-        if (this->refreshStatus == "refreshing")
-            return;
-        this->beginReboundAnimation();
-    }
+        this->setRecordEventModel();
 
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "ScrollY") {
-        contentOffset.x = recordEvent->getEventContentOffset().x;
-        setContentOffset(contentOffset.x, event->getAnimationValue());
+        if (this->m_Directions) {
+            if (shouldRefresh()) {
+                refreshStatus = "refreshing";
+                contentInsets.top = refreshHeaderHeight;
+            }
+            float to = contentOffset.y < -contentInsets.top ? -contentInsets.top
+                                                            : contentSize.height - size.height + contentInsets.bottom;
+            this->m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.y, to, 500,true);
+        } else {
+            float to = contentOffset.x < -contentInsets.left ? -contentInsets.left
+                                                             : contentSize.width - size.width + contentInsets.right;
+            this->m_scrollNodeDelegate->callArkTSReboundStart(contentOffset.x, to, 500,false);
+        }
     }
-
-    if (event->getMessageType() == "onUpdate" && event->getEventType() == "ScrollX") {
-        contentOffset.y = recordEvent->getEventContentOffset().y;
-        setContentOffset(event->getAnimationValue(), contentOffset.y);
-    }
-
+    
     if (event->getMessageType() == "onEnd" && event->getEventType() == "ReboundAnimation") {
-        if (momentumScrolling) {
-            momentumScrolling = false;
-            m_scrollNodeDelegate->onMomentumScrollEnd();
-            this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-            this->recordEventModel->setEventMomentumScrolling(false);
-            this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-            this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-            this->recordEventModel->setRefreshStatus(refreshStatus);
-            this->recordEventModel->setLoadingStatus(loadingStatus);
-            this->recordEventModel->setEventBounces(bounces);
-            this->recordEventModel->setEventContentOffset(contentOffset);
-            this->recordEventModel->setEventSize(size);
-            this->recordEventModel->setEventContentSize(contentSize);
-            this->recordEventModel->setEventContentInsets(contentInsets);
-            this->recordEventModel->setEventBeginPoint(beginPoint);
-            this->recordEventModel->setEventLastPoint(lastPoint);
-            auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-            EventBus::EventBus::getInstance()->setEvent(baseEvent);
+        this->setRecordEventModel();
+        if (this->m_Directions) {
+            onVerticalAnimationEnd();
+         }
+        else{
+            onHorizontalAnimationEnd();
         }
     }
 
     if (event->getMessageType() == "onEnd" && event->getEventType() == "InnerAnimation") {
-        if (momentumScrolling) {
-            momentumScrolling = false;
-            m_scrollNodeDelegate->onMomentumScrollEnd();
-            this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-            this->recordEventModel->setEventMomentumScrolling(false);
-            this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-            this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-            this->recordEventModel->setRefreshStatus(refreshStatus);
-            this->recordEventModel->setLoadingStatus(loadingStatus);
-            this->recordEventModel->setEventBounces(bounces);
-            this->recordEventModel->setEventContentOffset(contentOffset);
-            this->recordEventModel->setEventSize(size);
-            this->recordEventModel->setEventContentSize(contentSize);
-            this->recordEventModel->setEventContentInsets(contentInsets);
-            this->recordEventModel->setEventBeginPoint(beginPoint);
-            this->recordEventModel->setEventLastPoint(lastPoint);
-            auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-            EventBus::EventBus::getInstance()->setEvent(baseEvent);
+        if(this->m_Directions){
+            if (bounces && overshootVertical()) {
+                this->m_scrollNodeDelegate->callArkTSOuterStart(contentOffset.y, recordEvent->getAnimationValue(), 0.9f,true);
+            } else {
+                onVerticalAnimationEnd();
+            }
         }
-    }
-
-    if (event->getMessageType() == "onEnd" && event->getEventType() == "OuterHorizontalAnimation") {
-        this->beginHorizontalReboundAnimation();
-    }
-
-    if (event->getMessageType() == "onEnd" && event->getEventType() == "OuterHorizontalAnimation") {
-        if (momentumScrolling) {
-            momentumScrolling = false;
-            m_scrollNodeDelegate->onMomentumScrollEnd();
-            this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-            this->recordEventModel->setEventMomentumScrolling(false);
-            this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-            this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-            this->recordEventModel->setRefreshStatus(refreshStatus);
-            this->recordEventModel->setLoadingStatus(loadingStatus);
-            this->recordEventModel->setEventBounces(bounces);
-            this->recordEventModel->setEventContentOffset(contentOffset);
-            this->recordEventModel->setEventSize(size);
-            this->recordEventModel->setEventContentSize(contentSize);
-            this->recordEventModel->setEventContentInsets(contentInsets);
-            this->recordEventModel->setEventBeginPoint(beginPoint);
-            this->recordEventModel->setEventLastPoint(lastPoint);
-            auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-            EventBus::EventBus::getInstance()->setEvent(baseEvent);
+        else{
+            if (bounces && overshootHorizontal()) {
+                this->m_scrollNodeDelegate->callArkTSOuterStart(contentOffset.x, recordEvent->getAnimationValue(), 0.9f,false);
+            } else {
+                onHorizontalAnimationEnd();
+            }
         }
-    }
 
-    if (event->getMessageType() == "onEnd" && event->getEventType() == "InnerHorizontalAnimation") {
-        if (momentumScrolling) {
-            momentumScrolling = false;
-            m_scrollNodeDelegate->onMomentumScrollEnd();
-            this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-            this->recordEventModel->setEventMomentumScrolling(false);
-            this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-            this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-            this->recordEventModel->setRefreshStatus(refreshStatus);
-            this->recordEventModel->setLoadingStatus(loadingStatus);
-            this->recordEventModel->setEventBounces(bounces);
-            this->recordEventModel->setEventContentOffset(contentOffset);
-            this->recordEventModel->setEventSize(size);
-            this->recordEventModel->setEventContentSize(contentSize);
-            this->recordEventModel->setEventContentInsets(contentInsets);
-            this->recordEventModel->setEventBeginPoint(beginPoint);
-            this->recordEventModel->setEventLastPoint(lastPoint);
-            auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-            EventBus::EventBus::getInstance()->setEvent(baseEvent);
-        }
-    }
-
-    if (event->getMessageType() == "onEnd" && event->getEventType() == "EndRefresh") {
-        this->contentInsets.top = 0;
-        this->contentOffset.y = 0;
-        this->contentOffset.x = 0;
+        this->setRecordEventModel();
     }
 }
 
@@ -946,38 +608,13 @@ void SpringScrollViewNode::setChildWidth(float width) {
 void SpringScrollViewNode::setContentHeight(float height) { this->contentHeight = height; }
 
 void SpringScrollViewNode::beginRefresh() {
-    this->scrollBeginDrag = false;
-    dragging = false;
-    float vy = 0.020;
-    draggingDirection = "";
-    if (!momentumScrolling) {
-        momentumScrolling = true;
-        this->m_scrollNodeDelegate->onMomentumScrollBegin();
-    }
     refreshStatus = "refreshing";
     contentInsets.top = refreshHeaderHeight;
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
-    this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
-    this->recordEventModel->setRefreshStatus(refreshStatus);
-    this->recordEventModel->setLoadingStatus(loadingStatus);
-    this->recordEventModel->setEventBounces(bounces);
-    this->recordEventModel->setEventContentOffset(contentOffset);
-    this->recordEventModel->setEventSize(size);
-    this->recordEventModel->setEventContentSize(contentSize);
-    this->recordEventModel->setEventContentInsets(contentInsets);
-    this->recordEventModel->setEventBeginPoint(beginPoint);
-    this->recordEventModel->setEventLastPoint(lastPoint);
-    this->recordEventModel->setEventMomentumScrolling(momentumScrolling);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
-    this->beginOuterAnimation(vy);
+    this->setRecordEventModel();
 }
 
 
 void SpringScrollViewNode::setRecordEventModel() {
-    auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
-    this->contentOffset = recordEvent->getEventContentOffset();
     this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
     this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
     this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
@@ -991,8 +628,37 @@ void SpringScrollViewNode::setRecordEventModel() {
     this->recordEventModel->setEventBeginPoint(beginPoint);
     this->recordEventModel->setEventLastPoint(lastPoint);
     this->recordEventModel->setEventMomentumScrolling(momentumScrolling);
+    this->recordEventModel->setEventDirections(m_Directions);
+    this->recordEventModel->setEventRecordSwipeY(recordSwipeY);
+    this->recordEventModel->setEventDampingCoefficient(m_dampingCoefficient);
+    this->recordEventModel->setEventInitialVelocity(m_initialVelocity);
+    this->recordEventModel->setEventIsOnloading(isOnloading);
     auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
     EventBus::EventBus::getInstance()->setEvent(baseEvent);
 }
+
+void SpringScrollViewNode::setPagingEnabled(bool  pagingEnabled) { this->pagingEnabled = pagingEnabled; }
+
+void SpringScrollViewNode::setPageSize(float width, float height) {
+    this->pageSize.width = width;
+    this->pageSize.height = height;
+}
+
+void SpringScrollViewNode::onHorizontalAnimationEnd() {
+    if (momentumScrolling) {
+        momentumScrolling = false;
+        this->m_scrollNodeDelegate->onCustomMomentumScrollEnd();
+    }
+}
+
+
+void SpringScrollViewNode::onVerticalAnimationEnd() {
+    if (momentumScrolling) {
+        momentumScrolling = false;
+        this->m_scrollNodeDelegate->onCustomMomentumScrollEnd();
+    }
+}
+
+
 
 } // namespace rnoh

@@ -67,6 +67,12 @@ public:
     void onSizeChange(OnSizeChange value) const;
     void onContentSizeChange(OnContentSizeChange value) const;
     void onScrollBeginDrag() const;
+    void onCustomScrollBeginDrag() const;
+    void onCustomScrollEndDrag() const;
+    void onCustomTouchBegin() const;
+    void onCustomTouchEnd() const;
+    void onCustomMomentumScrollBegin() const;
+    void onCustomMomentumScrollEnd() const;
 };
 } // namespace react
 } // namespace facebook

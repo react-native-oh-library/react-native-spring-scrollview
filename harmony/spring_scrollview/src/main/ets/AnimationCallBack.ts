@@ -22,6 +22,6 @@
  * SOFTWARE.
  */
 export interface AnimationCallBack {
-  onUpdate(value: number);
+  onUpdate(value: number,currentPlayTime:number);
   onEnd();
 }

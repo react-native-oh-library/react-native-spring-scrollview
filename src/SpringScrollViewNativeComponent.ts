@@ -79,43 +79,44 @@ export class LoadingFooter extends React.Component<
 
 export class NormalFooter extends LoadingFooter {}
 
+
 export interface NativeProps extends ViewProps {
-    contentStyle?: ViewStyle;
-    bounces?: boolean;
-    scrollEnabled?: boolean;
-    directionalLockEnabled?: boolean;
-    initialContentOffset?: Offset;
-    showsVerticalScrollIndicator?: boolean;
-    showsHorizontalScrollIndicator?: boolean;
-    refreshHeader?: React.ComponentClass<RefreshHeaderPropType, RefreshHeaderStateType>;
-    loadingFooter?: React.ComponentClass<LoadingFooterPropType, LoadingFooterStateType>;
-    onRefresh?: () => any;
-    onLoading?: () => any;
-    allLoaded?: boolean;
-    textInputRefs?: any[];
-    inputToolBarHeight?: number;
-    tapToHideKeyboard?: boolean;
-    pagingEnabled?: boolean;
-    pageSize?: Size;
-    dragToHideKeyboard?: boolean;
-    onTouchBegin?: () => any;
-    onTouchEnd?: () => any;
-    onTouchFinish?: () => any;
-    inverted?: boolean;
-    onMomentumScrollBegin?: () => any;
-    onMomentumScrollEnd?: () => any;
-    onScroll?: (evt: ScrollEvent) => any;
-    onNativeContentOffsetExtract?: NativeContentOffset;
-    onSizeChange?: (size:Size) => any;
-    onContentSizeChange?: (size: Size) => any;
-    onScrollBeginDrag?: () => any;
-    scrollTo(offset: Offset, animated?: boolean): Promise<void>;
-    scroll(offset: Offset, animated?: boolean): Promise<void>;
-    scrollToBegin(animated?: boolean): Promise<void>;
-    scrollToEnd(animated?: boolean): Promise<void>;
-    endRefresh(): void;
-    endLoading(): void;
-    beginRefresh(): Promise<any>;
+  contentStyle?: ViewStyle;
+  bounces?: boolean;
+  scrollEnabled?: boolean;
+  pagingEnabled?: boolean;
+  pageSize?: Size;
+  decelerationRate?: number;
+  directionalLockEnabled?: boolean;
+  initialContentOffset?: Offset;
+  showsVerticalScrollIndicator?: boolean;
+  showsHorizontalScrollIndicator?: boolean;
+  refreshHeader?: React.ComponentClass<RefreshHeaderPropType, RefreshHeaderStateType>;
+  loadingFooter?: React.ComponentClass<LoadingFooterPropType, LoadingFooterStateType>;
+  onRefresh?: () => any;
+  onLoading?: () => any;
+  allLoaded?: boolean;
+  textInputRefs?: any[];
+  inputToolBarHeight?: number;
+  tapToHideKeyboard?: boolean;
+  dragToHideKeyboard?: boolean;
+  onTouchBegin?: () => any;
+  onTouchEnd?: () => any;
+  inverted?: boolean;
+  onMomentumScrollBegin?: () => any;
+  onMomentumScrollEnd?: () => any;
+  onScroll?: (evt: ScrollEvent) => any;
+  onNativeContentOffsetExtract?: NativeContentOffset;
+  onSizeChange?: (size:Size) => any;
+  onContentSizeChange?: (size: Size) => any;
+  onScrollBeginDrag?: () => any;
+  scrollTo(offset: Offset, animated?: boolean): Promise<void>;
+  scroll(offset: Offset, animated?: boolean): Promise<void>;
+  scrollToBegin(animated?: boolean): Promise<void>;
+  scrollToEnd(animated?: boolean): Promise<void>;
+  endRefresh(): void;
+  beginRefresh(): Promise<any>;
+  endLoading(rebound: boolean): void;
   }
   
   

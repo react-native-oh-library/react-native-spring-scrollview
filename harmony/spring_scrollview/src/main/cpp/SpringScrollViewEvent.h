@@ -31,7 +31,7 @@
 
 class SpringScrollViewEvent : public EventBus::Event {
 public:
-    explicit SpringScrollViewEvent(double animationValue) : animationValue(animationValue) {}
+    explicit SpringScrollViewEvent(double id) : id(id) {}
     
     virtual ~SpringScrollViewEvent() = default;
 
@@ -106,6 +106,27 @@ public:
     }
 
     float getEventRecordSwipeY() { return this->eventRecordSwipeY; }
+    
+     void setEventInitialVelocity(float eventInitialVelocity) { this->eventInitialVelocity = eventInitialVelocity; }
+
+    float getEventInitialVelocity() { return this->eventInitialVelocity; }
+
+    void setEventDampingCoefficient(float eventDampingCoefficient) { this->eventDampingCoefficient = eventDampingCoefficient; }
+
+    float getEventDampingCoefficient() { return this->eventDampingCoefficient; }
+
+    void setCurrentPlayTime(std::string currentPlayTime) { this->currentPlayTime = currentPlayTime; }
+
+    std::string getCurrentPlayTime()  { return this->currentPlayTime; }
+
+    void setEventDirections(bool directions) { this->eventDirections = directions;
+    }
+
+    bool getEventDirections()  { return this->eventDirections; }
+
+    void setEventIsOnloading(bool eventIsOnloading) { this->eventIsOnloading = eventIsOnloading; }
+
+    bool getEventIsOnloading() const { return this->eventIsOnloading; }
 
 protected:
     double animationValue;
@@ -124,5 +145,11 @@ protected:
     Types::EdgeInsets eventContentInsets;
     bool eventMomentumScrolling;
     float eventRecordSwipeY;
+    float eventInitialVelocity;
+    float eventDampingCoefficient;
+    std::string currentPlayTime;
+    bool eventDirections;
+    int id;
+    bool eventIsOnloading;
 };
 #endif // HARMONY_EXAMPLEEVENT_H

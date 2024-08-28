@@ -45,7 +45,7 @@ public:
     void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::EdgeInsets &result);
 
 #pragma mark - Props
-    Types::Offset initialContentOffset;
+        Types::Offset initialContentOffset;
     float refreshHeaderHeight;
     float loadingFooterHeight;
     bool bounces;
@@ -53,6 +53,9 @@ public:
     bool inverted;
     bool allLoaded;
     bool directionalLockEnabled;
+    bool pagingEnabled;
+    float decelerationRate;
+    Types::Size pageSize;
 };
 } // namespace react
 } // namespace facebook

@@ -54,16 +54,11 @@ void SpringScrollViewComponentInstance::onPropsChanged(SharedConcreteProps const
         return;
     }
     if (auto p = std::dynamic_pointer_cast<const facebook::react::RNCSpringScrollViewProps>(props)) {
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> refreshHeaderHeight: " << p->refreshHeaderHeight;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> loadingFooterHeight: " << p->loadingFooterHeight;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> bounces: " << p->bounces;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> allLoaded: " << p->allLoaded;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> inverted: " << p->inverted;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> scrollEnabled: " << p->scrollEnabled;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> directionalLockEnabled: "
-                   << p->directionalLockEnabled;
-        DLOG(INFO) << "<SpringScrollViewComponentInstance::setProps> initialContentOffset:"
-                   << p->initialContentOffset.y;
+        DLOG(INFO) << "SpringScrollViewComponentInstance::setProps refreshHeaderHeight: " << p->refreshHeaderHeight  
+        << " loadingFooterHeight " << p->loadingFooterHeight << " bounces " << p->bounces << " allLoaded " << p->allLoaded 
+        << " inverted " << p->inverted << " scrollEnabled " << p->scrollEnabled << " directionalLockEnabled " << p->directionalLockEnabled
+        << " initialContentOffset.x " << p->initialContentOffset.x << " initialContentOffset.y " << " pagingEnabled " << p->pagingEnabled
+        << " pageSize.width " << p->pageSize.width << " pageSize.height " << p->pageSize.height << " decelerationRate " << p->decelerationRate;
         refreshHeaderHeight = p->refreshHeaderHeight;
         loadingFooterHeight = p->loadingFooterHeight;
         bounces = p->bounces;
@@ -80,6 +75,9 @@ void SpringScrollViewComponentInstance::onPropsChanged(SharedConcreteProps const
         this->getLocalRootArkUINode().setInverted(p->inverted);
         this->getLocalRootArkUINode().setScrollEnabled(p->scrollEnabled);
         this->getLocalRootArkUINode().setDirectionalLockEnabled(p->directionalLockEnabled);
+        this->getLocalRootArkUINode().setPagingEnabled(p->pagingEnabled);
+        this->getLocalRootArkUINode().setPageSize(p->pageSize.width, p->pageSize.height);
+        this->getLocalRootArkUINode().setDecelerationRate(p->decelerationRate);
     }
 }
 
@@ -93,25 +91,6 @@ void SpringScrollViewComponentInstance::onLoading() {
     m_eventEmitter->onLoading({});
 };
 
-void SpringScrollViewComponentInstance::onTouchBegin() {
-    DLOG(INFO) << "onTouchBegin";
-    m_eventEmitter->onTouchBegin({});
-};
-
-void SpringScrollViewComponentInstance::onTouchEnd() {
-    DLOG(INFO) << "onTouchEnd";
-    m_eventEmitter->onTouchFinish({});
-};
-
-void SpringScrollViewComponentInstance::onMomentumScrollBegin() {
-    DLOG(INFO) << "onMomentumScrollBegin";
-    m_eventEmitter->onMomentumScrollBegin({});
-};
-
-void SpringScrollViewComponentInstance::onMomentumScrollEnd() {
-    DLOG(INFO) << "onMomentumScrollEnd";
-    m_eventEmitter->onMomentumScrollEnd({});
-};
 
 void SpringScrollViewComponentInstance::onScroll(
     const facebook::react::RNCSpringScrollViewEventEmitter::OnScroll &onScroll) {
@@ -119,148 +98,35 @@ void SpringScrollViewComponentInstance::onScroll(
     m_eventEmitter->onScroll(onScroll);
 };
 
-void SpringScrollViewComponentInstance::callArkTSInnerAnimationStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSInnerAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startInnerAnimation", args);
-    }
+void SpringScrollViewComponentInstance::onCustomScrollBeginDrag() {
+    DLOG(INFO) << "onCustomScrollBeginDrag";
+    m_eventEmitter->onCustomScrollBeginDrag();
 }
 
-void SpringScrollViewComponentInstance::callArkTSOuterAnimationStart(float from, float to, int duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSOuterAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startOuterAnimation", args);
-    }
+
+void SpringScrollViewComponentInstance::onCustomTouchBegin() {
+    DLOG(INFO) << "onCustomTouchBegin";
+    m_eventEmitter->onCustomTouchBegin();
 }
 
-void SpringScrollViewComponentInstance::callArkTSInnerHorizontalAnimationStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSInnerHorizontalAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startInnerHorizontalAnimation", args);
-    }
+void SpringScrollViewComponentInstance::onCustomTouchEnd() {
+    DLOG(INFO) << "onCustomTouchEnd";
+    m_eventEmitter->onCustomTouchEnd();
 }
 
-void SpringScrollViewComponentInstance::callArkTSOuterHorizontalAnimationStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSOuterHorizontalAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startOuterHorizontalAnimation", args);
-    }
+void SpringScrollViewComponentInstance::onCustomScrollEndDrag() {
+    DLOG(INFO) << "onCustomScrollEndDrag";
+    m_eventEmitter->onCustomScrollEndDrag();
 }
 
-void SpringScrollViewComponentInstance::callArkTSReboundAnimationStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSReboundAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startReboundAnimation", args);
-    }
+void SpringScrollViewComponentInstance::onCustomMomentumScrollBegin() {
+    DLOG(INFO) << "onCustomMomentumScrollBegin";
+    m_eventEmitter->onCustomMomentumScrollBegin();
 }
 
-void SpringScrollViewComponentInstance::callArkTSHorizontalReboundAnimationStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSHorizontalReboundAnimationStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startHorizontalReboundAnimation", args);
-    }
-}
-
-void SpringScrollViewComponentInstance::callArkTSEndRefreshStart(float from, float to, long duration) {
-    DLOG(INFO) << "SpringScrollViewComponentInstance callArkTSEndRefreshStart "
-               << " from:" << from << " to:" << to << " duration:" << duration;
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startEndRefresh", args);
-    }
-}
-
-void SpringScrollViewComponentInstance::callArkTSEndLoadingStart(float from, float to, long duration) {
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startEndLoading", args);
-    }
-}
-
-void SpringScrollViewComponentInstance::callArkTSScrollXStart(float from, float to, long duration) {
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startScrollX", args);
-    }
-}
-
-void SpringScrollViewComponentInstance::callArkTSScrollYStart(float from, float to, long duration) {
-    auto rnInstancePtr = this->m_deps->rnInstance.lock();
-    if (rnInstancePtr != nullptr) {
-        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
-        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
-        std::vector<ArkJS::IntermediaryArg> args;
-        args.push_back(from);
-        args.push_back(to);
-        args.push_back(duration);
-        arkTsTurboModule->callSync("startScrollY", args);
-    }
+void SpringScrollViewComponentInstance::onCustomMomentumScrollEnd() {
+    DLOG(INFO) << "onCustomMomentumScrollEnd";
+    m_eventEmitter->onCustomMomentumScrollEnd();
 }
 
 void SpringScrollViewComponentInstance::callArkTSAnimationCancel() {
@@ -272,12 +138,70 @@ void SpringScrollViewComponentInstance::callArkTSAnimationCancel() {
     }
 }
 
+
+void SpringScrollViewComponentInstance::callArkTSInnerStart(float f, float v0, float d, float lower, float upper,
+                                                            bool pagingEnabled, float pageSize,bool isVertical) {
+    DLOG(INFO) << "callArkTSInnerStart f " << f << " v0 " << v0 << " d " << d << " lower " << lower << " upper " << upper 
+    << " pagingEnabled " << pagingEnabled << " pageSize " << pageSize << " isVertical " << isVertical;
+
+    auto rnInstancePtr = this->m_deps->rnInstance.lock();
+    if (rnInstancePtr != nullptr) {
+        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
+        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
+        std::vector<ArkJS::IntermediaryArg> args;
+        args.push_back(f);
+        args.push_back(v0);
+        args.push_back(d);
+        args.push_back(lower);
+        args.push_back(upper);
+        args.push_back(pagingEnabled);
+        args.push_back(pageSize);
+        args.push_back(isVertical);
+        arkTsTurboModule->callSync("startInner", args);
+    }
+}
+void SpringScrollViewComponentInstance::callArkTSOuterStart(float f, float v0, float d,bool isVertical) {
+    DLOG(INFO) << "callArkTSOuterStart f " << f << " v0 " << v0 << " d " << d;
+    auto rnInstancePtr = this->m_deps->rnInstance.lock();
+    if (rnInstancePtr != nullptr) {
+        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
+        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
+        std::vector<ArkJS::IntermediaryArg> args;
+        args.push_back(f);
+        args.push_back(v0);
+        args.push_back(d);
+        args.push_back(isVertical);
+        arkTsTurboModule->callSync("startOuter", args);
+    }
+}
+void SpringScrollViewComponentInstance::callArkTSReboundStart(float f, float t, long d ,bool isVertical) {
+    DLOG(INFO) << "callArkTSReboundStart f " << f << " t " << t << " d " << d;
+    auto rnInstancePtr = this->m_deps->rnInstance.lock();
+    if (rnInstancePtr != nullptr) {
+        auto turboModule = rnInstancePtr->getTurboModule("SpringScrollViewContext");
+        auto arkTsTurboModule = std::dynamic_pointer_cast<rnoh::ArkTSTurboModule>(turboModule);
+        std::vector<ArkJS::IntermediaryArg> args;
+        args.push_back(f);
+        args.push_back(t);
+        args.push_back(d);
+        args.push_back(isVertical);
+        arkTsTurboModule->callSync("startRebound", args);
+    }
+}
+
+
+facebook::react::Point SpringScrollViewComponentInstance::getCurrentOffset() const {
+    auto recordEvent = std::static_pointer_cast<SpringScrollViewEvent>(EventBus::EventBus::getInstance()->getEvent());
+    float scrollOffsetY = recordEvent->getEventContentOffset().y;
+    return {0, scrollOffsetY};
+}
+
 void SpringScrollViewComponentInstance::handleCommand(std::string const &commandName, folly::dynamic const &args) {
     DLOG(INFO) << "SpringScrollViewComponentInstance handleCommand commandName:" << commandName;
     if (commandName == "10000") {
         this->getLocalRootArkUINode().endRefresh();
     } else if (commandName == "10001") {
-        this->getLocalRootArkUINode().endLoading();
+        this->getLocalRootArkUINode().endLoading(args[0].asBool());
         this->firstLoad = false;
     } else if (commandName == "10002") {
         if (args[0] == nullptr) {
@@ -314,10 +238,5 @@ void SpringScrollViewComponentInstance::finalizeUpdates() {
     DLOG(INFO) << "SpringScrollViewComponentInstance finalizeUpdates";
     this->getLocalRootArkUINode().init();
 }
-
-void SpringScrollViewComponentInstance::onScrollBeginDrag() {
-    DLOG(INFO) << "onScrollBeginDrag";
-    m_eventEmitter->onScrollBeginDrag();
-};
 
 } // namespace rnoh
