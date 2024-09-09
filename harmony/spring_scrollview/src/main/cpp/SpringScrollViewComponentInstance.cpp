@@ -57,7 +57,7 @@ void SpringScrollViewComponentInstance::onPropsChanged(SharedConcreteProps const
         DLOG(INFO) << "SpringScrollViewComponentInstance::setProps refreshHeaderHeight: " << p->refreshHeaderHeight  
         << " loadingFooterHeight " << p->loadingFooterHeight << " bounces " << p->bounces << " allLoaded " << p->allLoaded 
         << " inverted " << p->inverted << " scrollEnabled " << p->scrollEnabled << " directionalLockEnabled " << p->directionalLockEnabled
-        << " initialContentOffset.x " << p->initialContentOffset.x << " initialContentOffset.y " << " pagingEnabled " << p->pagingEnabled
+        << " initialContentOffset.x " << p->initialContentOffset.x << " initialContentOffset.y " << initialContentOffset.y << " pagingEnabled " << p->pagingEnabled
         << " pageSize.width " << p->pageSize.width << " pageSize.height " << p->pageSize.height << " decelerationRate " << p->decelerationRate;
         refreshHeaderHeight = p->refreshHeaderHeight;
         loadingFooterHeight = p->loadingFooterHeight;

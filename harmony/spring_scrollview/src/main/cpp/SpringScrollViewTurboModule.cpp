@@ -28,18 +28,5 @@ namespace rnoh {
     SpringScrollViewTurboModule::SpringScrollViewTurboModule(const ArkTSTurboModule::Context ctx,
                                                                  const std::string name)
         : ArkTSTurboModule(ctx, name) {
-        methodMap_ = {
-            ARK_METHOD_METADATA(startInnerAnimation, 3),
-            ARK_METHOD_METADATA(startOuterAnimation, 3),
-            ARK_METHOD_METADATA(startOuterHorizontalAnimation, 3),
-            ARK_METHOD_METADATA(startInnerHorizontalAnimation, 3),
-            ARK_METHOD_METADATA(startReboundAnimation, 3),
-            ARK_METHOD_METADATA(startHorizontalReboundAnimation, 3),
-            ARK_METHOD_METADATA(startEndRefresh, 3),
-            ARK_METHOD_METADATA(startEndLoading, 3),
-            ARK_METHOD_METADATA(startScrollX, 3),
-            ARK_METHOD_METADATA(startScrollY, 3),
-            ARK_METHOD_METADATA(cancelAnimation, 0),
-        };
     }
 } // namespace rnoh

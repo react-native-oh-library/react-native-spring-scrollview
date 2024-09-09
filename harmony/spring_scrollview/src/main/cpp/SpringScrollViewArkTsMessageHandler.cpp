@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "SpringScrollViewArkTSMessageHandler.h"
+#include "SpringScrollViewArkTsMessageHandler.h"
 #include "SpringScrollViewNode.h"
 #include <EventBus/EventHandler.h>
 #include "EventBus/EventBus.h"

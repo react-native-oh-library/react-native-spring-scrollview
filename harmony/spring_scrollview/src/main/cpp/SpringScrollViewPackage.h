@@ -30,7 +30,6 @@
 #include "SpringScrollViewJSIBinder.h"
 #include "SpringScrollViewNapiBinder.h"
 #include "SpringScrollViewComponentInstance.h"
-#include "SpringScrollViewEmitRequestHandler.h"
 #include "SpringScrollViewTurboModule.h"
 #include "SpringScrollViewArkTsMessageHandler.h"
 
@@ -81,11 +80,7 @@ public:
             {"SpringScrollView", std::make_shared<SpringScrollViewNapiBinder>()},
         };
     }
-
-    EventEmitRequestHandlers createEventEmitRequestHandlers() override {
-        return {std::make_shared<SpringScrollViewEmitRequestHandler>()};
-    }
-
+    
     std::unique_ptr<TurboModuleFactoryDelegate> createTurboModuleFactoryDelegate() override {
         return std::make_unique<SpringScrollViewContextFactoryDelegate>();
     }
