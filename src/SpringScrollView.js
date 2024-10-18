@@ -323,8 +323,6 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
       loadingStatus
     } = e.nativeEvent;
     this._contentOffset = { x, y };
-    this._refreshHeader?.changeToY(y);
-    this._loadingFooter?.changeToY(y);
     if (this._refreshStatus !== refreshStatus) {
       this._toRefreshStatus(refreshStatus);
       this.props.onRefresh && refreshStatus === "refreshing" && this.props.onRefresh();
@@ -573,7 +571,7 @@ export class SpringScrollView extends React.PureComponent<SpringScrollViewPropTy
     showsHorizontalScrollIndicator: true,
     initialContentOffset: { x: 0, y: 0 },
     alwaysBounceVertical: true,
-    pagingEnabled: false,
+    pagingEnabled: true,
     pageSize: { width: 0, height: 0 },
   };
 }

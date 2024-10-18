@@ -401,8 +401,9 @@ void SpringScrollViewNode ::setContentOffset(float x, float y) {
         ArkUI_AttributeItem translateItem = {translateValue.data(), translateValue.size()};
     NativeNodeApi::getInstance()->setAttribute(m_stackArkUINodeHandle, NODE_TRANSLATE, &translateItem);
     facebook::react::RNCSpringScrollViewEventEmitter::OnScroll onScroll = {
-        {contentOffset.x / 2, contentOffset.y / 2}, refreshStatus, loadingStatus};
+        {contentOffset.x , contentOffset.y }, refreshStatus, loadingStatus};
     m_scrollNodeDelegate->onScroll(onScroll);
+    m_scrollNodeDelegate->sendEventAnimationsOnScroll(onScroll);
     DLOG(INFO) << "SpringScrollViewNode setContentOffset loadingStatus:" << loadingStatus
                << " refreshStatus:" << refreshStatus << " contentOffset.y " << contentOffset.y << " contentOffset.x "
                << contentOffset.x;

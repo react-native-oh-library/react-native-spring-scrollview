@@ -39,24 +39,27 @@ export class NormalHeader extends RefreshHeader {
 
   startLoadAnimation = () => {
     this.loadingAnimation.setValue(0);
-    Animated.timing(this.loadingAnimation, {
-      toValue: 1,
-      duration: 4000,
-      easing: Easing.linear,
-      useNativeDriver:false
-    }).start(() => this.startLoadAnimation());
+    Animated.loop(
+      Animated.timing(this.loadingAnimation, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true
+      }),
+      { iterations: -1 },
+    ).start();
   }
 
   _renderIcon() {
     const s = this.state.status;
     if(Platform.OS === "harmony"){
-    this.startLoadAnimation();
-    const rotateValue=this.loadingAnimation.interpolate({
-      inputRange: [0,1],
-      outputRange: ["0deg", "360deg"]
-    })
-    if (s === "refreshing" || s === "rebound") {
-      return <Animated.Image
+      this.startLoadAnimation();
+      const rotateValue=this.loadingAnimation.interpolate({
+        inputRange: [0,1],
+        outputRange: ["0deg", "360deg"]
+      })
+      if (s === "refreshing" || s === "rebound") {
+        return (<Animated.Image
         source={require("./Customize/res/icon_load.png")}
         style={{
           transform: [
@@ -65,20 +68,26 @@ export class NormalHeader extends RefreshHeader {
             }
           ]
         }}
-      />;
+      />);
     }
+    else{
+    const { maxHeight, offset } = this.props;
     return (
       <Animated.Image
         source={require("./Customize/res/arrow.png")}
         style={{
           transform: [
             {
-              rotate: -this.state.rotateY * 2.5 + "deg"
+              rotate: offset.interpolate({
+                inputRange: [-maxHeight - 1 - 10, -maxHeight - 10, -50, -49],
+                outputRange: ["180deg", "180deg", "0deg", "0deg"]
+              })
             }
           ]
         }}
       />
     );
+    }
    }
    else {
     if (s === "refreshing" || s === "rebound") {

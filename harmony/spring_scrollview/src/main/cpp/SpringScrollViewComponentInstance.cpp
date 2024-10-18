@@ -239,4 +239,24 @@ void SpringScrollViewComponentInstance::finalizeUpdates() {
     this->getLocalRootArkUINode().init();
 }
 
+void SpringScrollViewComponentInstance::sendEventAnimationsOnScroll(
+        facebook::react::RNCSpringScrollViewEventEmitter::OnScroll onScroll) {
+        auto nativeAnimatedTurboModule = m_springNativeAnimatedTurboModule.lock();
+        if (nativeAnimatedTurboModule == nullptr) {
+            auto instance = m_deps->rnInstance.lock();
+            if (instance == nullptr) {
+                   return;
+            }
+            nativeAnimatedTurboModule =
+                instance->getTurboModule<NativeAnimatedTurboModule>("NativeAnimatedTurboModule");
+            m_springNativeAnimatedTurboModule = nativeAnimatedTurboModule;
+        }
+        if (nativeAnimatedTurboModule != nullptr) {
+            using folly::dynamic;
+            dynamic payload = dynamic::object("contentOffset",dynamic::object("x",onScroll.contentOffset.x)("y",onScroll.contentOffset.y)("refreshStatus",onScroll.refreshStatus)("loadingStatus",onScroll.loadingStatus));
+            nativeAnimatedTurboModule->handleComponentEvent(m_tag, "onScroll",payload);
+            DLOG(INFO) << "SpringScrollViewComponentInstance::sendEventAnimationsOnScroll y " << onScroll.contentOffset.y;
+        }
+}
+
 } // namespace rnoh

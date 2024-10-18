@@ -31,6 +31,7 @@
 #include "ShadowNodes.h"
 #include "Types.h"
 #include <react/renderer/core/LayoutContext.h>
+#include "RNOHCorePackage/TurboModules/Animated/NativeAnimatedTurboModule.h"
 
 namespace rnoh {
 class SpringScrollViewComponentInstance : public CppComponentInstance<facebook::react::RNCSpringScrollViewShadowNode>,
@@ -54,6 +55,7 @@ private:
     bool swiperStatus = false;
     facebook::react::Size m_containerSize;
     facebook::react::Size m_contentSize;
+    std::weak_ptr<NativeAnimatedTurboModule> m_springNativeAnimatedTurboModule{};
 public:
     SpringScrollViewComponentInstance(Context context);
     void onChildInserted(ComponentInstance::Shared const &childComponentInstance, std::size_t index) override;
@@ -81,6 +83,7 @@ public:
     void callArkTSReboundStart(float f, float t, long d,bool isVertical) override;
     facebook::react::Point getCurrentOffset() const override;
     bool isHandlingTouches() const override;
+    void sendEventAnimationsOnScroll(facebook::react::RNCSpringScrollViewEventEmitter::OnScroll onScroll) override;
 };
 } // namespace rnoh
 #endif // HARMONY_SpringScrollViewCOMPONENTINSTANCE_H
