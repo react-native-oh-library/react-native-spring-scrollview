@@ -43,76 +43,88 @@ export class NormalFooter extends LoadingFooter {
 
   startLoadAnimation = () => {
     this.loadingAnimation.setValue(0);
-    Animated.timing(this.loadingAnimation, {
-      toValue: 1,
-      duration: 4000,
-      easing: Easing.linear,
-      useNativeDriver:false
-    }).start(() => this.startLoadAnimation());
+    Animated.loop(
+      Animated.timing(this.loadingAnimation, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true
+      }),
+      { iterations: -1 },
+    ).start();
   }
 
   _renderIcon() {
     const s = this.state.status;
-    if(Platform.OS === "harmony") {
-    this.startLoadAnimation();
-    const rotateValue=this.loadingAnimation.interpolate({
-      inputRange: [0,1],
-      outputRange: ["0deg", "360deg"]
-    })
-    if (s === "loading" || s === "cancelLoading" || s === "rebound") {
-          return <Animated.Image
-        source={require("./Customize/res/icon_load.png")}
-        style={{
-          transform: [
-            {
-              rotate: rotateValue
-            }
-          ]
-        }}
-      />;
+    if (Platform.OS === "harmony") {
+      this.startLoadAnimation();
+      const rotateValue = this.loadingAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["0deg", "360deg"]
+      })
+      if (s === "loading" || s === "cancelLoading" || s === "rebound") {
+        return <Animated.Image
+          source={require("./Customize/res/icon_load.png")}
+          style={{
+            transform: [
+              {
+                rotate: rotateValue
+              }
+            ]
+          }}
+        />;
+      }
+      const { maxHeight, offset, bottomOffset } = this.props;
+      return (
+        <Animated.Image
+          source={require("./Customize/res/arrow.png")}
+          style={{
+            transform: [
+              {
+                rotate: offset.interpolate({
+                  inputRange: [
+                    bottomOffset - 1 + 45,
+                    bottomOffset + 45,
+                    bottomOffset + maxHeight,
+                    bottomOffset + maxHeight + 1
+                  ],
+                  outputRange: ["180deg", "180deg", "0deg", "0deg"]
+                })
+              }
+            ]
+          }}
+        />
+      );
     }
-    return (
-      <Animated.Image
-        source={require("./Customize/res/arrow.png")}
-        style={{
-          transform: [
-            {
-              rotate: 180-this.state.rotateY * 2.5 + "deg"
-            }
-          ]
-        }}
-      />
-    );
-  }
-  else {
-    if (s === "loading" || s === "cancelLoading" || s === "rebound") {
-      return <ActivityIndicator color={"gray"}/>;
+    else {
+      if (s === "loading" || s === "cancelLoading" || s === "rebound") {
+        return <ActivityIndicator color={"gray"} />;
+      }
+      const { maxHeight, offset, bottomOffset } = this.props;
+      return (
+        <Animated.Image
+          source={require("./Customize/res/arrow.png")}
+          style={{
+            transform: [
+              {
+                rotate: offset.interpolate({
+                  inputRange: [
+                    bottomOffset - 1 + 45,
+                    bottomOffset + 45,
+                    bottomOffset + maxHeight,
+                    bottomOffset + maxHeight + 1
+                  ],
+                  outputRange: ["180deg", "180deg", "0deg", "0deg"]
+                })
+              }
+            ]
+          }}
+        />
+      );
     }
-    const { maxHeight, offset, bottomOffset } = this.props;
-    return (
-      <Animated.Image
-        source={require("./Customize/res/arrow.png")}
-        style={{
-          transform: [
-            {
-              rotate: offset.interpolate({
-                inputRange: [
-                  bottomOffset - 1 + 45,
-                  bottomOffset + 45,
-                  bottomOffset + maxHeight,
-                  bottomOffset + maxHeight + 1
-                ],
-                outputRange: ["180deg", "180deg", "0deg", "0deg"]
-              })
-            }
-          ]
-        }}
-      />
-    );
-   }
   }
 
-  renderContent(){
+  renderContent() {
     return null;
   }
 

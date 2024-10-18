@@ -58,6 +58,7 @@ public:
     virtual void callArkTSInnerStart(float f,  float v0,  float d, float lower, float upper, bool pagingEnabled, float pageSize,bool isVertical){};
     virtual void callArkTSOuterStart(float f, float v0, float d,bool isVertical){};
     virtual void callArkTSReboundStart(float f, float t, long d,bool isVertical){};
+    virtual void sendEventAnimationsOnScroll(facebook::react::RNCSpringScrollViewEventEmitter::OnScroll onScroll){};
 };
 
 class SpringScrollViewNode : public ArkUINode, public EventBus::EventHandler<SpringScrollViewEvent> {
