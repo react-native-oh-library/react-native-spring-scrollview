@@ -226,8 +226,13 @@ void SpringScrollViewComponentInstance::onStateChanged(SharedConcreteState const
                            : stateData.getContentSize().height;
     this->getLocalRootArkUINode().setContentSize(
         {static_cast<float>(stateData.getContentSize().width), static_cast<float>(tempHeight)});
-    DLOG(INFO) << "SpringScrollViewComponentInstance onStateChanged h:" << tempHeight
-               << " w:" << m_layoutMetrics.frame.size.width;
+    DLOG(INFO) << "SpringScrollViewComponentInstance onStateChanged content_h:" << stateData.getContentSize().height
+               << " content_w:" << stateData.getContentSize().width << " h:"<<m_layoutMetrics.frame.size.height << " w:" << m_layoutMetrics.frame.size.width;
+    if(!this->firstShowUI){    
+    this->getLocalRootArkUINode().setChildHeight(m_layoutMetrics.frame.size.height);
+    this->getLocalRootArkUINode().setChildWidth(m_layoutMetrics.frame.size.width);
+    }
+    this->firstShowUI = false;
 }
 
 bool SpringScrollViewComponentInstance::isHandlingTouches() const { return this->swiperStatus; }

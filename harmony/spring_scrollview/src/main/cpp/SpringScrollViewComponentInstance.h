@@ -56,6 +56,7 @@ private:
     facebook::react::Size m_containerSize;
     facebook::react::Size m_contentSize;
     std::weak_ptr<NativeAnimatedTurboModule> m_springNativeAnimatedTurboModule{};
+    bool firstShowUI = true;
 public:
     SpringScrollViewComponentInstance(Context context);
     void onChildInserted(ComponentInstance::Shared const &childComponentInstance, std::size_t index) override;
