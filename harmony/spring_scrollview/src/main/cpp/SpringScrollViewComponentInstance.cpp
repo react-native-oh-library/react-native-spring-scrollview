@@ -224,8 +224,11 @@ void SpringScrollViewComponentInstance::onStateChanged(SharedConcreteState const
     float tempHeight = (stateData.getContentSize().height < m_layoutMetrics.frame.size.height)
                            ? m_layoutMetrics.frame.size.height
                            : stateData.getContentSize().height;
+    float tempWidth = (stateData.getContentSize().width < m_layoutMetrics.frame.size.width)
+                           ? m_layoutMetrics.frame.size.width
+                           : stateData.getContentSize().width;
     this->getLocalRootArkUINode().setContentSize(
-        {static_cast<float>(stateData.getContentSize().width), static_cast<float>(tempHeight)});
+        {tempWidth, tempHeight});
     DLOG(INFO) << "SpringScrollViewComponentInstance onStateChanged content_h:" << stateData.getContentSize().height
                << " content_w:" << stateData.getContentSize().width << " h:"<<m_layoutMetrics.frame.size.height << " w:" << m_layoutMetrics.frame.size.width;
     if(!this->firstShowUI){    
