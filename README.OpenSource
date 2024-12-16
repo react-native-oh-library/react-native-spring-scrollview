@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "react-native-spring-scrollview",
+        "License": "MIT License",
+        "License File": "LICENSE",
+        "Version Number": "3.0.2",
+        "Owner" : "xiafeng@huawei.com",
+        "Upstream URL": "https://github.com/bolan9999/react-native-spring-scrollview",
+        "Description": "React Native Spring ScrollView V3 is a high performance cross-platform native bounces ScrollView for React Native.(iOS & Android)"
+    }
+]
