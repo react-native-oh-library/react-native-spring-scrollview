@@ -52,7 +52,7 @@ RNCSpringScrollViewProps::RNCSpringScrollViewProps(const PropsParserContext &con
                   convertRawProp(context, rawProps, "decelerationRate", sourceProps.decelerationRate, 1.0f)){}
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::Offset &result) {
-    auto map = (butter::map<std::string, RawValue>)value;
+    auto map = (std::unordered_map<std::string, RawValue>)value;
     auto tmp_x = map.find("x");
     if (tmp_x != map.end()) {
         fromRawValue(context, tmp_x->second, result.x);
@@ -64,7 +64,7 @@ void fromRawValue(const PropsParserContext &context, const RawValue &value, Type
 }
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::Size &result) {
-    auto map = (butter::map<std::string, RawValue>)value;
+    auto map = (std::unordered_map<std::string, RawValue>)value;
     auto tmp_width = map.find("width");
     if (tmp_width != map.end()) {
         fromRawValue(context, tmp_width->second, result.width);
@@ -76,7 +76,7 @@ void fromRawValue(const PropsParserContext &context, const RawValue &value, Type
 }
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::Point &result) {
-    auto map = (butter::map<std::string, RawValue>)value;
+    auto map = (std::unordered_map<std::string, RawValue>)value;
     auto tmp_x = map.find("x");
     if (tmp_x != map.end()) {
         fromRawValue(context, tmp_x->second, result.x);
@@ -88,7 +88,7 @@ void fromRawValue(const PropsParserContext &context, const RawValue &value, Type
 }
 
 void fromRawValue(const PropsParserContext &context, const RawValue &value, Types::EdgeInsets &result) {
-    auto map = (butter::map<std::string, RawValue>)value;
+    auto map = (std::unordered_map<std::string, RawValue>)value;
     auto tmp_top = map.find("top");
     if (tmp_top != map.end()) {
         fromRawValue(context, tmp_top->second, result.top);

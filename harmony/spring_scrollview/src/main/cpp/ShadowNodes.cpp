@@ -49,7 +49,7 @@ void RNCSpringScrollViewShadowNode::layout(LayoutContext layoutContext) {
     updateStateIfNeeded();
 }
 
-Point RNCSpringScrollViewShadowNode::getContentOriginOffset() const {
+Point RNCSpringScrollViewShadowNode::getContentOriginOffset(bool includeTransform) const {
     auto stateData = getStateData();
     auto contentOffset = stateData.contentOffset;
     return {-contentOffset.x, -contentOffset.y + stateData.scrollAwayPaddingTop};

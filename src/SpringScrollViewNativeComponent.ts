@@ -1,6 +1,6 @@
 import * as React from "react";
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
-import type { HostComponent, ViewProps,Animated,ViewStyle } from 'react-native';
+import type { HostComponent, ViewProps,Animated,ViewStyle, Ref } from 'react-native';
 
 export interface Offset {
   x: number;
@@ -110,6 +110,9 @@ export interface NativeProps extends ViewProps {
   onSizeChange?: (size:Size) => any;
   onContentSizeChange?: (size: Size) => any;
   onScrollBeginDrag?: () => any;
+}
+
+export interface SpringScrollViewMethods {
   scrollTo(offset: Offset, animated?: boolean): Promise<void>;
   scroll(offset: Offset, animated?: boolean): Promise<void>;
   scrollToBegin(animated?: boolean): Promise<void>;
@@ -117,9 +120,12 @@ export interface NativeProps extends ViewProps {
   endRefresh(): void;
   beginRefresh(): Promise<any>;
   endLoading(rebound: boolean): void;
-  }
-  
-  
-  export default codegenNativeComponent<NativeProps>(
-    'SpringScrollView'
-  ) as HostComponent<NativeProps>;
+}
+
+const SpringScrollViewComponent = codegenNativeComponent<NativeProps>(
+  'SpringScrollView'
+) as HostComponent<NativeProps>;
+
+export type SpringScrollViewRef = Ref<SpringScrollViewComponent & SpringScrollViewMethods>;
+
+export default SpringScrollViewComponent;
