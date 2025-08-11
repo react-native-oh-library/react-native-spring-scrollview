@@ -45,6 +45,7 @@ export class SpringScrollViewNativeAdapter extends React.Component {
         onTouchEnd={Platform.select({
           ios: this.props.onTouchEnd,
           android: null,
+          harmony: this.props.onTouchEnd, // 适配 HarmonyOS
         })}
         onCustomTouchEnd={(e) =>
           this.props.onTouchEnd && this.props.onTouchEnd(e)
