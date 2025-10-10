@@ -213,6 +213,9 @@ void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
     if (shouldRefresh()) {
         refreshStatus = "refreshing";
         contentInsets.top = refreshHeaderHeight;
+        if (vy > 0) {
+            vy = 0;
+        }
     }
     if (shouldLoad()) {
         loadingStatus = "loading";
