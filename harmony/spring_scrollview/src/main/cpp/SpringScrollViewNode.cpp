@@ -200,7 +200,6 @@ void SpringScrollViewNode::onDown(ArkUI_GestureEvent *evt) {
 void SpringScrollViewNode::onUp(ArkUI_GestureEvent *evt) {
     this->scrollBeginDrag = false;
     if(!isMove) return;
-    this->onMove(evt);
     dragging = false;
     float vy = OH_ArkUI_PanGesture_GetVelocityY(evt)/1000;
     float vx = OH_ArkUI_PanGesture_GetVelocityX(evt)/1000;
