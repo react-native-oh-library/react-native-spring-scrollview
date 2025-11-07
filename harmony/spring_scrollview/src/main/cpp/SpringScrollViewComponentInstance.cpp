@@ -32,6 +32,7 @@ namespace rnoh {
 SpringScrollViewComponentInstance::SpringScrollViewComponentInstance(Context context)
     : CppComponentInstance(std::move(context)) {
     m_springStackNode.setSpringScrollViewNodeDelegate(this);
+    m_springStackNode.setIsRootNode(true);
 }
 
 void SpringScrollViewComponentInstance::onChildInserted(ComponentInstance::Shared const &childComponentInstance,

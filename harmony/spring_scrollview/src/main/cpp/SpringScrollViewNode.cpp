@@ -35,26 +35,27 @@ SpringScrollViewNode::SpringScrollViewNode()
       m_stackArkUINodeHandle(nullptr) {}
 SpringScrollViewNode::~SpringScrollViewNode() {
     this->isDestory = true;
-    m_scrollNodeDelegate->callArkTSAnimationCancel();
+    if(this->isRootNode) m_scrollNodeDelegate->callArkTSAnimationCancel();
     this->isInitialContentOffset = false;
-    this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
-    this->recordEventModel->setRefreshStatus("waiting");
-    this->recordEventModel->setLoadingStatus("waiting");
-    this->recordEventModel->setEventBounces(false);
-    this->recordEventModel->setEventContentOffset({0, 0});
-    this->recordEventModel->setEventSize({0, 0});
-    this->recordEventModel->setEventContentSize({0, 0});
-    this->recordEventModel->setEventContentInsets({0, 0, 0, 0});
-    this->recordEventModel->setEventBeginPoint({0, 0});
-    this->recordEventModel->setEventLastPoint({0, 0});
-    this->recordEventModel->setEventDirections(true);
-    this->recordEventModel->setEventIsOnloading(false);
-    this->recordEventModel->setEventRecordSwipeY(0);
-    this->recordEventModel->setEventDampingCoefficient(0);
-    this->recordEventModel->setEventMomentumScrolling(false);
-    auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
-    EventBus::EventBus::getInstance()->setEvent(baseEvent);
-    
+    if(this->isRootNode && EventBus::EventBus::getInstance()) {
+        this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
+        this->recordEventModel->setRefreshStatus("waiting");
+        this->recordEventModel->setLoadingStatus("waiting");
+        this->recordEventModel->setEventBounces(false);
+        this->recordEventModel->setEventContentOffset({0, 0});
+        this->recordEventModel->setEventSize({0, 0});
+        this->recordEventModel->setEventContentSize({0, 0});
+        this->recordEventModel->setEventContentInsets({0, 0, 0, 0});
+        this->recordEventModel->setEventBeginPoint({0, 0});
+        this->recordEventModel->setEventLastPoint({0, 0});
+        this->recordEventModel->setEventDirections(true);
+        this->recordEventModel->setEventIsOnloading(false);
+        this->recordEventModel->setEventRecordSwipeY(0);
+        this->recordEventModel->setEventDampingCoefficient(0);
+        this->recordEventModel->setEventMomentumScrolling(false);
+        auto baseEvent = std::static_pointer_cast<EventBus::Event>(this->recordEventModel);
+        EventBus::EventBus::getInstance()->setEvent(baseEvent);
+    }
 }
 
 void SpringScrollViewNode::setSpringScrollViewNodeDelegate(SpringScrollViewNodeDelegate *springScrollViewNodeDelegate) {
@@ -64,7 +65,8 @@ void SpringScrollViewNode::setSpringScrollViewNodeDelegate(SpringScrollViewNodeD
 void SpringScrollViewNode::regsiteEventBus() {
     auto handler = std::make_shared<SpringScrollViewNode>();
     auto baseHandler = std::static_pointer_cast<EventBus::EventHandlerBase>(handler);
-    EventBus::EventBus::getInstance()->registerHandler(baseHandler);
+    this->m_currentEBHandlerID = EventBus::EventBus::getInstance()->registerHandler(baseHandler);
+    this->isEventBusRegistered = true;
 }
 
 void SpringScrollViewNode::insertChild(ArkUINode &child, std::size_t index) {
@@ -94,6 +96,10 @@ void SpringScrollViewNode::insertChild(ArkUINode &child, std::size_t index) {
 
 void SpringScrollViewNode::removeChild(ArkUINode &child) {
     maybeThrow(NativeNodeApi::getInstance()->removeChild(m_stackArkUINodeHandle, child.getArkUINodeHandle()));
+    if(this->isEventBusRegistered && EventBus::EventBus::getInstance()) {
+        EventBus::EventBus::getInstance()->unregisterHandler(this->m_currentEBHandlerID);
+        this->isEventBusRegistered = false;
+    }
 }
 
 void SpringScrollViewNode::init() {
@@ -646,6 +652,8 @@ void SpringScrollViewNode::setPageSize(float width, float height) {
     this->pageSize.width = width;
     this->pageSize.height = height;
 }
+
+void SpringScrollViewNode::setIsRootNode(bool value) { this->isRootNode = value; }
 
 void SpringScrollViewNode::onHorizontalAnimationEnd() {
     if (momentumScrolling) {
