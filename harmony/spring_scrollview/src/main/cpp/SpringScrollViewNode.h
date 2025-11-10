@@ -96,6 +96,7 @@ public:
     void setContentHeight(float height);
     void setPagingEnabled(bool pagingEnabled);
     void setPageSize(float width, float height);
+    void setIsRootNode(bool value);
     
 private:
     Types::Offset contentOffset{0.0f, 0.0f};
@@ -149,6 +150,9 @@ private:
     bool pagingEnabled = false;
     bool m_Directions;
     double m_AnimationValue;
+    EventBus::EBHandlerID m_currentEBHandlerID;
+    bool isEventBusRegistered = false;
+    bool isRootNode = false;
     bool cancelAllAnimations();
     void onMove(ArkUI_GestureEvent *evt);
     void onDown(ArkUI_GestureEvent *evt);
