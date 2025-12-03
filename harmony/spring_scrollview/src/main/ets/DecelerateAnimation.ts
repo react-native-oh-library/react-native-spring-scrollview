@@ -75,7 +75,7 @@ export class DecelerateAnimation {
     if (!this.mAnimator) {
       return false;
     }
-    this.mAnimator.cancel();
+     this.mAnimator.finish();
     return this.animating;
   }
 }
