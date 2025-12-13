@@ -82,6 +82,7 @@ void SpringScrollViewNode::insertChild(ArkUINode &child, std::size_t index) {
         NativeNodeApi::getInstance()->insertChildAt(m_stackArkUINodeHandle, child.getArkUINodeHandle(), index);
         this->setChildWidth(m_scrollNodeDelegate->getLayoutSize().width);
         this->setChildHeight(m_scrollNodeDelegate->getLayoutSize().height);
+        this->setContentOffset(initialContentOffset.x, initialContentOffset.y);
         this->recordEventModel = std::make_shared<SpringScrollViewEvent>(5);
         this->recordEventModel->setNodeHandle(m_stackArkUINodeHandle);
         this->recordEventModel->setEventSpringScrollViewNodeDelegate(this->m_scrollNodeDelegate);
